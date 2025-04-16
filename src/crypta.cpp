@@ -5,7 +5,7 @@ using namespace std;
 #include "../include/util.h"
 #include "../include/ciphers.h"
 
-void analyze_cipher(const string& text) {
+void analyze_caesar(const string& text) {
     
     vector<float> english_freq = getEnglishFrequency();
 
@@ -24,6 +24,12 @@ void analyze_cipher(const string& text) {
     cout << "Decrypted Text: " << cDecrypt(text,imax) << endl;
 }
 
+void analyze_caesar_bruteforce(const string& text) {
+    for (int i = 1; i < 26; i++) {
+        cout << "Decrypted with Key " << i << ": " << cDecrypt(text,i) << endl;
+    }
+}
+
 void analyze_vigenere(const string& text) {
     cout << "Not Implemented" << endl;
 }
@@ -32,7 +38,7 @@ void analyze_affine(const string& text) {
     
     float miofcv;
     float mmiofc = 0;
-    int ma, mb;
+    int ma = 0, mb = 0;
     string plaintext;
     for (int i = 0; i < 26; i++) {
         for (int j = 0; j < 26; j++) {
@@ -76,7 +82,7 @@ int main(int argc, char** argv) {
 
     string alg = argv[1];
 
-    if (alg != "caesar" && alg != "vigenere" && alg != "affine") {
+    if (alg != "caesar" && alg != "bcaesar" && alg != "vigenere" && alg != "affine") {
         cerr << "Enter a valid encryption method. (caesar, vigenere, affine)"
              << endl;
         return 1;
@@ -101,7 +107,10 @@ int main(int argc, char** argv) {
     }
     
     if (alg == "caesar") {
-        analyze_cipher(text);
+        analyze_caesar(text);
+    }
+    else if (alg == "bcaesar") {
+        analyze_caesar_bruteforce(text);
     }
     else if (alg == "vigenere") {
         analyze_vigenere(text);

@@ -1,2 +1,11 @@
-.vscode/
+# Data Folder
 text/
+
+# Output Files
+*.o
+
+# Targets
+cipher
+fcipher
+crypta
+tool
