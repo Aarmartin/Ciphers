@@ -4,9 +4,7 @@ using namespace std;
 #include <string>
 #include <fstream>
 #include <filesystem>
-#include "../include/caesar.h"
-#include "../include/vigenere.h"
-#include "../include/affine.h"
+#include "../include/ciphers.h"
 #include "../include/util.h"
 
 void main_caesar(const string& op, const string& text, const string& fname) {
