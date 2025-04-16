@@ -135,7 +135,6 @@ tuple<int,int> mostCommon(const vector<float>& freq) {
     int j = 0;
     float max = freq[0];
     int imax = 0;
-    float prevMax = freq[0];
     int prevIMax = 0;
     for (auto i: freq) {
         if (i > max) {
