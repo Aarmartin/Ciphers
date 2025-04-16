@@ -7,15 +7,16 @@ CIPHER = cipher
 FCIPHER = fcipher
 BRUTE = bruteforce
 FREQUENCY = freq
-CAESAR_CRYPTA = ccrypta
-VIGENERE_CRYPTA = vcrypta
+CRYPTA = crypta
 MTABLE = mtable
+MINVERSE = minverse
+FKEY = findkey
 
 PRIMARY_FILES = $(wildcard $(CIPHERS)/*.cpp) $(SRCDIR)/util.cpp
 
 OBJECTS = $(PRIMARY_FILES:.cpp=.o)
 
-all: $(CIPHER) $(FCIPHER) $(BRUTE) $(FREQUENCY) $(CAESAR_CRYPTA) $(MTABLE) $(VIGENERE_CRYPTA)
+all: $(CIPHER) $(FCIPHER) $(BRUTE) $(FREQUENCY) $(MTABLE) $(CRYPTA) $(MINVERSE) $(FKEY)
 
 $(CIPHER): $(OBJECTS) $(SRCDIR)/cipher.o
 	$(CXX) $(CXXFLAGS) -o $(CIPHER) $(OBJECTS) $(SRCDIR)/cipher.o
@@ -29,17 +30,20 @@ $(BRUTE): $(OBJECTS) $(SRCDIR)/bruteforce.o
 $(FREQUENCY): $(OBJECTS) $(SRCDIR)/freq.o
 	$(CXX) $(CXXFLAGS) -o $(FREQUENCY) $(OBJECTS) $(SRCDIR)/freq.o
 
-$(CAESAR_CRYPTA): $(OBJECTS) $(SRCDIR)/ccrypta.o
-	$(CXX) $(CXXFLAGS) -o $(CAESAR_CRYPTA) $(OBJECTS) $(SRCDIR)/ccrypta.o
-
-$(VIGENERE_CRYPTA): $(OBJECTS) $(SRCDIR)/vcrypta.o
-	$(CXX) $(CXXFLAGS) -o $(VIGENERE_CRYPTA) $(OBJECTS) $(SRCDIR)/vcrypta.o
+$(CRYPTA): $(OBJECTS) $(SRCDIR)/crypta.o
+	$(CXX) $(CXXFLAGS) -o $(CRYPTA) $(OBJECTS) $(SRCDIR)/crypta.o
 
 $(MTABLE): $(OBJECTS) $(SRCDIR)/mtable.o
 	$(CXX) $(CXXFLAGS) -o $(MTABLE) $(OBJECTS) $(SRCDIR)/mtable.o
+
+$(MINVERSE): $(OBJECTS) $(SRCDIR)/minverse.o
+	$(CXX) $(CXXFLAGS) -o $(MINVERSE) $(OBJECTS) $(SRCDIR)/minverse.o
+
+$(FKEY): $(OBJECTS) $(SRCDIR)/findkey.o
+	$(CXX) $(CXXFLAGS) -o $(FKEY) $(OBJECTS) $(SRCDIR)/findkey.o
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(SRCDIR)/*.o $(CIPHERS)/*.o $(CIPHER) $(FCIPHER) $(BRUTE) $(FREQUENCY) $(CAESAR_CRYPTA) $(VIGENERE_CRYPTA) $(MTABLE)
+	rm -f $(SRCDIR)/*.o $(CIPHERS)/*.o $(CIPHER) $(FCIPHER) $(BRUTE) $(FREQUENCY) $(MTABLE) $(CRYPTA) $(MINVERSE) $(FKEY)

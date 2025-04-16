@@ -2,9 +2,7 @@ using namespace std;
 
 #include <iostream>
 #include <string>
-#include "../include/caesar.h"
-#include "../include/vigenere.h"
-#include "../include/affine.h"
+#include "../include/ciphers.h"
 #include "../include/util.h"
 
 void main_caesar(const string& op, const string& text) {

@@ -3,6 +3,7 @@ using namespace std;
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <tuple>
 #include "../include/util.h"
 
 int gcd(int a, int b) {
@@ -37,6 +38,15 @@ int modInverse(int a, int m) {
     return x1;
 }
 
+tuple<int,int> affine_key(char p1, char p2, char c1, char c2) {
+    int diff = (p1 - p2 + 26) % 26;
+    int dinv = modInverse(diff,26);
+    int a = (((c1 - c2 + 26) % 26) * dinv) % 26;
+    int b = ((c1 - 'a') - (a * (p1 - 'a')) % 26 + 26) % 26;
+
+    return {a, b};
+}
+
 string strToUpper(const string& str) {
     string result;
     for (char c: str) {
@@ -51,6 +61,15 @@ string strToLower(const string& str) {
         result += tolower(c);
     }
     return result;
+}
+
+bool isNumber(const string& input) {
+    for (char c: input) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 vector<float> frequency(const string& text) {
@@ -68,6 +87,65 @@ vector<float> frequency(const string& text) {
         freq[i] = float(count[i]) / sum;
     }
     return freq;
+}
+
+vector<float> getLanguageFrequency(const string& language) {
+    if (language == "English" || language == "english") {
+        vector<float> english_freq = {			
+            0.082, /* a */
+            0.015, /* b */
+            0.028, /* c */
+            0.043, /* d */ 
+            0.127, /* e */
+            0.022, /* f */
+            0.020, /* g */
+            0.061, /* h */
+            0.070, /* i */
+            0.002, /* j */
+            0.008, /* k */
+            0.040, /* l */
+            0.024, /* m */
+            0.067, /* n */
+            0.075, /* o */
+            0.019, /* p */
+            0.001, /* q */
+            0.060, /* r */
+            0.063, /* s */
+            0.091, /* t */
+            0.028, /* u */
+            0.010, /* v */
+            0.023, /* w */
+            0.001, /* x */
+            0.020, /* y */
+            0.001  /* z */
+        };
+
+        return english_freq;
+    }
+    else {
+        return {};
+    }
+}
+
+vector<float> getEnglishFrequency() {
+    return getLanguageFrequency("English");
+}
+
+tuple<int,int> mostCommon(const vector<float>& freq) {
+    int j = 0;
+    float max = freq[0];
+    int imax = 0;
+    float prevMax = freq[0];
+    int prevIMax = 0;
+    for (auto i: freq) {
+        if (i > max) {
+            prevIMax = imax;
+            max = i;
+            imax = j;
+        }
+        j++;
+    }
+    return {imax, prevIMax};
 }
 
 float iofc(const vector<float>& freq) {
