@@ -2,6 +2,8 @@
 text/
 
 # Output Files
+objs/
+bin/
 *.o
 
 # Targets
