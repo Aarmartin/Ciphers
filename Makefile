@@ -1,33 +1,50 @@
+# Setup
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -O2 -Iinclude
+CXXFLAGS = -std=c++17 -Wall -O2 -Iinclude -MMD -MP
+
+# Directories
 SRCDIR = src
-CIPHERS = $(SRCDIR)/ciphers
+CIPHDIR = $(SRCDIR)/ciphers
+OBJDIR = objs
+BINDIR = bin
 
-CIPHER = cipher
-FCIPHER = fcipher
-CRYPTA = crypta
-TOOL = tool
+# Objects
+LIB_OBJS = $(patsubst $(CIPHDIR)/%.cpp,$(OBJDIR)/ciphers/%.o,$(wildcard $(CIPHDIR)/*.cpp))								# Ciphers
+UTIL_OBJS = $(OBJDIR)/util.o																							# Util File
+MAIN_OBJS  := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(filter-out $(SRCDIR)/util.cpp,$(wildcard $(SRCDIR)/*.cpp)))	# Main Files
 
-PRIMARY_FILES = $(wildcard $(CIPHERS)/*.cpp) $(SRCDIR)/util.cpp
+# Binaries
+BINNS = cipher fcipher crypta tool
+BINS = $(addprefix $(BINDIR)/,$(BINNS))
 
-OBJECTS = $(PRIMARY_FILES:.cpp=.o)
+.PHONY: all clean dirs
 
-all: $(CIPHER) $(FCIPHER) $(CRYPTA) $(TOOL)
+all: dirs $(BINS)
 
-$(CIPHER): $(OBJECTS) $(SRCDIR)/cipher.o
-	$(CXX) $(CXXFLAGS) -o $(CIPHER) $(OBJECTS) $(SRCDIR)/cipher.o
+# Link Cipher and Util objects with each Binary
+$(BINDIR)/%: $(UTIL_OBJS) $(LIB_OBJS) $(OBJDIR)/%.o | $(BINDIR)
+	@echo "Linking $@"
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
-$(FCIPHER): $(OBJECTS) $(SRCDIR)/fcipher.o
-	$(CXX) $(CXXFLAGS) -o $(FCIPHER) $(OBJECTS) $(SRCDIR)/fcipher.o
-
-$(CRYPTA): $(OBJECTS) $(SRCDIR)/crypta.o
-	$(CXX) $(CXXFLAGS) -o $(CRYPTA) $(OBJECTS) $(SRCDIR)/crypta.o
-
-$(TOOL): $(OBJECTS) $(SRCDIR)/tool.o
-	$(CXX) $(CXXFLAGS) -o $(TOOL) $(OBJECTS) $(SRCDIR)/tool.o
-
-%.o: %.cpp
+# Build Ciphers
+$(OBJDIR)/ciphers/%.o: $(CIPHDIR)/%.cpp | dirs
+	@echo "Building $@"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Build Source Objects
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	@echo "Building $@"
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Make Directory
+dirs:
+	@mkdir -p $(OBJDIR) \
+			$(OBJDIR)/ciphers \
+			$(BINDIR)
+
+# Make Clean
 clean:
-	rm -f $(SRCDIR)/*.o $(CIPHERS)/*.o $(CIPHER) $(FCIPHER) $(CRYPTA) $(TOOL)
+	@echo "Cleaning..."
+	rm -rf $(OBJDIR) $(BINDIR)
+
+-include $(OBJDIR)/**/*.d
