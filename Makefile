@@ -21,8 +21,14 @@ BINS = $(addprefix $(BINDIR)/,$(BINNS))
 
 all: dirs $(BINS)
 
+# Make Directory
+dirs:
+	@mkdir -p $(OBJDIR) \
+			$(OBJDIR)/ciphers \
+			$(BINDIR)
+
 # Link Cipher and Util objects with each Binary
-$(BINDIR)/%: $(UTIL_OBJS) $(LIB_OBJS) $(OBJDIR)/%.o | $(BINDIR)
+$(BINDIR)/%: $(UTIL_OBJS) $(LIB_OBJS) $(OBJDIR)/%.o | dirs
 	@echo "Linking $@"
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
@@ -32,15 +38,9 @@ $(OBJDIR)/ciphers/%.o: $(CIPHDIR)/%.cpp | dirs
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Build Source Objects
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | dirs
 	@echo "Building $@"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Make Directory
-dirs:
-	@mkdir -p $(OBJDIR) \
-			$(OBJDIR)/ciphers \
-			$(BINDIR)
 
 # Make Clean
 clean:
