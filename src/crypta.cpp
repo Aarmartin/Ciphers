@@ -44,6 +44,17 @@ void analyze_caesar_bruteforce(const string& text) {
 }
 
 // Vigenere Cryptanalysis function
+// 1: Find approximate key length with Friendman formula and pad on some additional length
+// 2: Test against each possible key length
+//  a: Test against each text substring group
+//   i: Find substring frequency
+//   ii: Calculate Index of Coincidence
+//  b: Take average IC of all substrings at current key length
+//  c: Track best average IC
+// 3: Loop through each subtext group
+//  a: Perform Caesar cryptanalysis to find character
+// 4: Add found character to final key
+// 5: Decrypt text with final finshed key
 void analyze_vigenere(const string& text) {
 
     // Find Friendman approximation of Vigenere key length
