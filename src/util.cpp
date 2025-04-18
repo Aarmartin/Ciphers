@@ -175,7 +175,7 @@ string substring(const string& str, int step, int shift = 0) {
     int j = 0;
     for (char c: str) {
         if (isalpha(c)) {
-            if ((j + shift) % step == 0) {
+            if ((j - shift) % step == 0) {
                 res += toupper(c);
             }
             j++;
