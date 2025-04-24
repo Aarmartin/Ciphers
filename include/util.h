@@ -9,6 +9,10 @@ int gcd(int a, int b);
 
 int modInverse(int a, int m);
 
+int modInverseRecursive(int a, int m);
+
+tuple<int,int> modInverseRecursiveLoop(int a, int m);
+
 std::tuple<int,int> affine_key(char p1, char p2, char c1, char c2);
 
 std::string strToUpper(const std::string& str);
