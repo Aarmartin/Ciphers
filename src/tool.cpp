@@ -27,7 +27,7 @@ void affine_key_finder() {
 }
 
 void mod_inverse(int n, int m) {
-    cout << "Mod Inverse of " << n << " mod " << m << ": " << modInverse(n,m)
+    cout << "Mod Inverse of " << n << " mod " << m << ": " << modInverseRecursive(n,m)
          << endl;
 }
 

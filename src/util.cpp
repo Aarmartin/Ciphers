@@ -4,6 +4,7 @@ using namespace std;
 #include <cmath>
 #include <algorithm>
 #include <tuple>
+#include <utility>
 #include "../include/util.h"
 
 // Greatest Common Divisor
@@ -29,27 +30,60 @@ int gcd(int a, int b) {
 //  a - Integer
 //  m - Integer
 // Returns:
-// The modular inverse of a mod m
+//  The modular inverse of a mod m
 int modInverse(int a, int m) {
-    int m0 = m;
-    int x0 = 0;
-    int x1 = 1;
-    int q, t;
+    int m_orig = m;                 // Save original Mod value to account for negative result correction
+    int x = 0;                      // Initial Coefficient of m
+    int y = 1;                      // Initial Coefficient of a - Coefficients in the formula for GCD: ay' + mx' = g where x = y' = 1 and y = (y' - qx') = 0
+    int q;
 
-    while (a > 1) {
-        q = a / m;
-        t = m;
-        m = a % m;
-        a = t;
+    while (a > 1) {                 // Continue until GCD of some value and 1
+        q = a / m;                  // Find the quotient of the two values
+        a = exchange(m, a % m);     // a becomes m, m becomes remainder f(a,m) -> f(m,r)
 
-        t = x0;
-        x0 = x1 - q * x0;
-        x1 = t;
+        // ax + my = g => ay' + m(y'- qx') = g
+        // These coefficient terms are the previous and previous previous values
+        y = exchange(x, y - q * x); // x becomes y' - q * x', y becomes x'
     }
 
-    x1 = (x1 + m0) % m0;
+    y = (y + m_orig) % m_orig;      // Ensure positive result mod m for the second coefficient
 
-    return x1;
+    return y;                       // Return Coefficient
+}
+
+// Modular Inverse Initial Call
+int modInverseRecursive(int a, int m) {
+    auto [x,y] = modInverseRecursiveLoop(a, m);
+    x = (x + m) % m;    // Ensure positive result mod m for the first coefficient
+    return x;
+}
+
+// Modular Inverse Recursive
+// Takes in two integers and returns the modular inverse of the first from the second
+// Params:
+//  a - Integer
+//  m - Integer
+// Returns:
+//  The modular inverse of a and m
+tuple<int,int> modInverseRecursiveLoop(int a, int m) {
+
+    // Base Case
+    if (m == 1) {
+        return {0, 1};
+    }
+
+    int x, x_p, y, y_p, q, r;
+
+    q = a / m;                                      // Find the quotient of the two values
+    r = a % m;                                      // Find the remainder of the two values
+
+    tie(x_p, y_p) = modInverseRecursiveLoop(m, r);  // Retrieve previous x and y values from one level down with recursive call on x and y
+
+    // ax + my = g => ay' + m(y'- qx') = g
+    x = y_p;                                        // x becomes y'
+    y = x_p - y_p * q;                              // y becomes x' - y' * q
+
+    return {x, y};                                  // Return new coefficients
 }
 
 tuple<int,int> affine_key(char p1, char p2, char c1, char c2) {
