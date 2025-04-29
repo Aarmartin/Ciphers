@@ -37,4 +37,6 @@ std::vector<float> shift(std::vector<float> freq, int shift);
 
 std::string substring(const std::string& str, int step, int shift);
 
+int soc(int a, int m, int b, int n);
+
 #endif

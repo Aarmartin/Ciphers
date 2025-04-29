@@ -90,18 +90,27 @@ void frequency_finder(const string& filename) {
     cout << endl;
 }
 
+void soc_solver(int a, int m, int b, int n) {
+    int x = soc(a,m,b,n);
+
+    cout << "System of Congruences:" << endl
+         << "x ≡ " + to_string(a) + " (mod " + to_string(m) + ")" << endl
+         << "x ≡ " + to_string(b) + " (mod " + to_string(n) + ")" << endl
+         << "x = " + to_string(x) << endl;
+}
+
 int main(int argc, char** argv) {
     
     if (argc < 2) {
-        cout << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency> [arguments]"
+        cout << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc> [arguments]"
              << endl;
         return 1;
     }
 
     string tool = argv[1];
 
-    if (tool != "findkey" && tool != "minverse" && tool != "mtable" && tool !="frequency") {
-        cerr << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency> [arguments]"
+    if (tool != "findkey" && tool != "minverse" && tool != "mtable" && tool !="frequency" && tool != "soc") {
+        cerr << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc> [arguments]"
              << endl;
         return 1;
     }
@@ -132,6 +141,14 @@ int main(int argc, char** argv) {
             return 1;
         }
         frequency_finder(argv[2]);
+    }
+    else if (tool == "soc") {
+        if (argc != 6) {
+            cout << "Usage: " << argv[0] << " " << argv[1] << " <x_1> <n_1> <x_2> <n_2>"
+                 << endl;
+            return 1;
+        }
+        soc_solver(stoi(argv[2]),stoi(argv[3]),stoi(argv[4]),stoi(argv[5]));
     }
 
     return 1;
