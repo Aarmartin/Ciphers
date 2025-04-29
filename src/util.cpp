@@ -266,3 +266,9 @@ string substring(const string& str, int step, int shift = 0) {
     }
     return res;
 }
+
+int soc(int a, int m, int b, int n) {
+    int n_inv = modInverseRecursive(n, m);
+    int m_inv = modInverseRecursive(m, n);
+    return (a*n*n_inv + b*m*m_inv) % (m*n);
+}
