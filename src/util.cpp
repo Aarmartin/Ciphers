@@ -1,11 +1,15 @@
 using namespace std;
 
+#include <iostream>
+
 #include <vector>
+#include <array>
 #include <cmath>
 #include <algorithm>
 #include <tuple>
 #include <utility>
 #include "../include/util.h"
+#include "../include/lattice.h"
 
 // Greatest Common Divisor
 // Takes in two integers and returns their greatest common divisor
@@ -267,8 +271,70 @@ string substring(const string& str, int step, int shift = 0) {
     return res;
 }
 
+// System of Congruences
+// Takes in two congruence values and their respective modular values, and returns the value of the system of congruences
+// Of the form: x === a (mod m), x === b (mod n)
+// Params:
+//  a - Integer
+//  m - Integer
+//  b - Integer
+//  n - Integer
+// Returns:
+//  Result of System of Congruences
 int soc(int a, int m, int b, int n) {
-    int n_inv = modInverseRecursive(n, m);
-    int m_inv = modInverseRecursive(m, n);
+    int n_inv = modInverseRecursive(n, m);  // Find inverse of n (mod m)
+    int m_inv = modInverseRecursive(m, n);  // Find inverse of m (mod n)
     return (a*n*n_inv + b*m*m_inv) % (m*n);
+}
+
+vector<int> p_factors(int n) {
+    int i = 2;
+    vector<int> factors;
+
+    while (i * i <= n) {
+        if (n % i != 0) {
+            ++i;
+        }
+        else {
+            n /= i;
+            factors.push_back(i);
+        }
+    }
+    if (n > 1) {
+        factors.push_back(n);
+    }
+    sort(factors.begin(),factors.end());
+    factors.erase(unique(factors.begin(),factors.end()),factors.end());
+    return factors;
+}
+
+int totient(int n) {
+    vector<int> factors = p_factors(n);
+    double res = static_cast<double>(n);
+    for (auto &p : factors) {
+        res *= (1.0 - (1.0 / p));
+    }
+    return static_cast<int>(res + 0.5);
+}
+
+int modularExponentiation(int a, int e, int m) {
+    int res = 1;
+    a %= m;                                     // Reduce base mod m
+    while (e > 0) {                             // While exponent is not 0
+        if (e & 1) {                            // Check if least significant bit is a 1
+            res = res * a % m;                  // Multiply current value of result by our current base mod m
+        }
+        a = static_cast<int>(pow(a,2)) % m;     // Square base to evaluate at next power of 2
+        e >>= 1;                                // Shift exponent by 1 bit
+    }
+    return res;                                 // Resturn result
+}
+
+int fastModularExponentiation(int a, int e, int m) {
+    a %= m;                                 // Reduce base mod m
+    if (gcd(a,m) == 1) {                    // Euler theorem only works if base and mod are coprime
+        int phi_m = totient(m);
+        e %= phi_m;                         // Reduce exponent by totient
+    }
+    return modularExponentiation(a, e, m);  // Regular modular exponentiation
 }
