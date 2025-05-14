@@ -4,5 +4,6 @@
 #include "caesar.h"
 #include "vigenere.h"
 #include "affine.h"
+#include "lattice.h"
 
 #endif
