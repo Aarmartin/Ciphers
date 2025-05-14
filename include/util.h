@@ -39,4 +39,8 @@ std::string substring(const std::string& str, int step, int shift);
 
 int soc(int a, int m, int b, int n);
 
+int totient(int n);
+
+int fastModularExponentiation(int a, int e, int m);
+
 #endif

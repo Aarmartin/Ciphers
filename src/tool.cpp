@@ -91,12 +91,27 @@ void frequency_finder(const string& filename) {
 }
 
 void soc_solver(int a, int m, int b, int n) {
+
+    if (gcd(m,n) != 1) {
+        cerr << "Modular values must be coprime"
+             << endl;
+        return;
+    }
+
     int x = soc(a,m,b,n);
 
     cout << "System of Congruences:" << endl
          << "x ≡ " + to_string(a) + " (mod " + to_string(m) + ")" << endl
          << "x ≡ " + to_string(b) + " (mod " + to_string(n) + ")" << endl
          << "x = " + to_string(x) << endl;
+}
+
+void phi_finder(int n) {
+    cout << "φ(" << n << ") = " << totient(n) << endl;
+}
+
+void fme_finder(int a, int e, int m) {
+    cout << "Result of pow(" << a << "," << e << ") (mod " << m << ") = " << fastModularExponentiation(a, e, m) << " (mod " << m << ")" << endl;
 }
 
 int main(int argc, char** argv) {
@@ -109,8 +124,8 @@ int main(int argc, char** argv) {
 
     string tool = argv[1];
 
-    if (tool != "findkey" && tool != "minverse" && tool != "mtable" && tool !="frequency" && tool != "soc") {
-        cerr << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc> [arguments]"
+    if (tool != "findkey" && tool != "minverse" && tool != "mtable" && tool !="frequency" && tool != "soc" && tool != "phi" && tool != "fme") {
+        cerr << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc|phi|fme> [arguments]"
              << endl;
         return 1;
     }
@@ -149,6 +164,22 @@ int main(int argc, char** argv) {
             return 1;
         }
         soc_solver(stoi(argv[2]),stoi(argv[3]),stoi(argv[4]),stoi(argv[5]));
+    }
+    else if (tool == "phi") {
+        if (argc != 3) {
+            cout << "Usage: " << argv[0] << " " << argv[1] << " <int>"
+                 << endl;
+            return 1;
+        }
+        phi_finder(stoi(argv[2]));
+    }
+    else if (tool == "fme") {
+        if (argc != 5) {
+            cout << "Usage: " << argv[0] << " " << argv[1] << " <int> <int> <int>"
+                 << endl;
+            return 1;
+        }
+        fme_finder(stoi(argv[2]),stoi(argv[3]),stoi(argv[4]));
     }
 
     return 1;
