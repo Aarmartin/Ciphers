@@ -3,9 +3,8 @@
 
 #include <vector>
 
-using Int = int;
-using Vec = vector<int>;
-using Mat = vector<Vec>;
+using Vec = std::vector<int>;
+using Mat = std::vector<Vec>;
 
 #include <random>
 
@@ -25,7 +24,7 @@ struct CipherText {
 
 class LWE {
 public:
-    LWE(int n, int m, Int q, double sigma);
+    LWE(int m, int n, int q, double sigma);
 
     void keygen(PublicKey &pk, PrivateKey &sk);
 
@@ -34,27 +33,24 @@ public:
     int decrypt(const PrivateKey &sk, const CipherText &ct);
 
 private:
-    int n, m;
-    Int q;
+    int m, n;
+    int q;
     double sigma;
     std::mt19937 rng;
+    int max_gauss_radius;
 
-    std::uniform_int_distribution<Int> uni_dist;
-    std::normal_distribution<double> gauss_dist;
-    std::discrete_distribution<Int> tri_dist;
+    std::uniform_int_distribution<int> uni_dist;
+    std::discrete_distribution<double> gauss_dist;
+    std::uniform_int_distribution<int> tri_dist;
+    std::uniform_int_distribution<int> bin_dist;
 
-    Int sampleUniform() {return uni_dist(rng);}
-    Int sampleGaussian() {return static_cast<Int>(std::round(gauss_dist(rng)));}
-    Int sampleTrinary() {
-        Int x = tri_dist(rng);
-        return (x == 0 ? -1 : x == 1 ? 0 : 1);
+    int sampleUniform() {return uni_dist(rng);}
+    int sampleTrinary() {return tri_dist(rng);}
+    int sampleBinary() {return bin_dist(rng);}
+    int sampleGaussian() {
+        int idx = gauss_dist(rng);
+        return idx - max_gauss_radius;
     }
-
-    Int mod(Int a, Int m);
-    void modVec(Vec &v, Int q);
-    Vec matVecMul(const Mat &m,const Vec &v, Int q);
-    Vec vecAdd(const Vec &a, const Vec &b);
-    Int dot(const Vec &a, const Vec &b, Int q); 
 };
 
 #endif

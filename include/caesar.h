@@ -1,10 +1,18 @@
 #ifndef CAESAR_H
 #define CAESAR_H
 
+#include "cipher.h"
 #include <string>
 
-std::string cEncrypt(const std::string& plaintext, int key);
+class CaesarCipher : public Cipher {
+public:
+    explicit CaesarCipher(int key);
 
-std::string cDecrypt(const std::string& ciphertext, int key);
+    std::string encrypt(const std::string& plaintext) const override;
+    std::string decrypt(const std::string& ciphertext) const override;
+
+private:
+    int key_;
+};
 
 #endif
