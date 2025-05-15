@@ -1,21 +1,26 @@
 using namespace std;
 
 #include "../../include/caesar.h"
-#include "../../include/util.h"
+#include "../../include/char_util.h"
 
-string cEncrypt(const string& plaintext, int key) {
+CaesarCipher::CaesarCipher(int key)
+    : key_( ((key % 26) + 26) % 26)
+{}
+
+string CaesarCipher::encrypt(const string& plaintext) const {
     string result;
-    for(char c: plaintext) {
-        if(isalpha(c)){
+    result.reserve(plaintext.size());
+    for (char c : plaintext) {
+        if (isalpha(c)) {
             c = tolower(c);
-            result += char(((c - 'a' + key) % 26) + 'A');
+            result += shiftChar(c, key_);
         }
+        else result += c;
     }
     return result;
 }
 
-string cDecrypt(const string& ciphertext, int key) {
-    string result;
-    result = cEncrypt(ciphertext,26 - key);
-    return strToLower(result);
+string CaesarCipher::decrypt(const string& ciphertext) const {
+    CaesarCipher reverse(26 - key_);
+    return strtolower(reverse.encrypt(ciphertext));
 }
