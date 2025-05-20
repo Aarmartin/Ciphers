@@ -253,21 +253,22 @@ void main_affine(const string& op, const string& text, const string& fname) {
     }
 }
 
-void main_rsa(const string& op, const string& text, const string& fname) {
+void main_rsa(const string& op, const string& text, const string& fname, const string& kname) {
     if (op == "encrypt") {
         std::string str_n;
         std::string str_e;
 
-        cout << "Enter value for n: ";
-        cin >> str_n;
-        cin.ignore();
-        mpz_class n(str_n);
+        ifstream k(kname);
+        if (!k) {
+            cerr << "Key file not found" << endl;
+            return;
+        }
+        std::getline(k, str_n);
+        mpz_class n(str_n.c_str(),10);
 
-        cout << "Enter value for e: ";
-        cin >> str_e;
-        cin.ignore();
-        mpz_class e(str_e);
-        
+        std::getline(k, str_e);
+        mpz_class e(str_e.c_str(),10);
+
         std::vector<mpz_class> ciphertext = rEncrypt(text, n, e);
 
         string oname = filesystem::path(fname).replace_extension(".enc").string();
@@ -283,15 +284,16 @@ void main_rsa(const string& op, const string& text, const string& fname) {
         std::string str_n;
         std::string str_d;
 
-        cout << "Enter value for n: ";
-        cin >> str_n;
-        cin.ignore();
-        mpz_class n(str_n);
+        ifstream k(kname);
+        if (!k) {
+            cerr << "Key file not found" << endl;
+            return;
+        }
+        std::getline(k, str_n);
+        mpz_class n(str_n.c_str(),10);
 
-        cout << "Enter value for d: ";
-        cin >> str_d;
-        cin.ignore();
-        mpz_class d(str_d);
+        std::getline(k, str_d);
+        mpz_class d(str_d.c_str(),10);
 
         ifstream f(fname);
         std::vector<mpz_class> input;
@@ -317,7 +319,7 @@ void main_rsa(const string& op, const string& text, const string& fname) {
 
 int main(int argc, char** argv){
 
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
         cerr << "Usage:" << argv[0]
              << " <encryption algorithm> <[encrypt|decrypt|keygen]> <filename>"
              << endl;
@@ -327,6 +329,10 @@ int main(int argc, char** argv){
     string alg = argv[1];
     string op = argv[2];
     string fname = argv[3];
+    string kname;
+    if (argc == 5) {
+        kname = argv[4];
+    }
 
     if (alg != "caesar" && alg != "vigenere" && alg != "affine" && alg != "lattice" && alg != "rsa") {
         cerr << "Enter a valid encryption method. (caesar, vigenere, affine, rsa)"
@@ -372,7 +378,7 @@ int main(int argc, char** argv){
         main_lwe(op, text, fname);
     }
     else if (alg == "rsa") {
-        main_rsa(op, text, fname);
+        main_rsa(op, text, fname, kname);
     }
 
     return 0;
