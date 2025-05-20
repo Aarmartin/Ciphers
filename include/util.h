@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <gmpxx.h>
 
 int gcd(int a, int b);
 
@@ -11,7 +12,7 @@ int modInverse(int a, int m);
 
 int modInverseRecursive(int a, int m);
 
-tuple<int,int> modInverseRecursiveLoop(int a, int m);
+std::tuple<int,int> modInverseRecursiveLoop(int a, int m);
 
 std::tuple<int,int> affine_key(char p1, char p2, char c1, char c2);
 
@@ -42,5 +43,9 @@ int soc(int a, int m, int b, int n);
 int totient(int n);
 
 int fastModularExponentiation(int a, int e, int m);
+
+mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m);
+
+std::vector<std::string> get_blocks(const std::string& plaintext, std::size_t size = 214);
 
 #endif
