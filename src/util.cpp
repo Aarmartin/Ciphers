@@ -338,7 +338,7 @@ mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m) {
         if (e % 2 == 1) {
             res = res * a % m;
         }
-        mpz_powm(a.get_mpz_t(),a.get_mpz_t(),e.get_mpz_t(),m.get_mpz_t());
+        a = (a * a) % m;
         e >>= 1;
     }
     return res;
