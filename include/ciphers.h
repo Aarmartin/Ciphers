@@ -5,5 +5,6 @@
 #include "vigenere.h"
 #include "affine.h"
 #include "lattice.h"
+#include "rsa.h"
 
 #endif
