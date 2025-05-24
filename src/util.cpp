@@ -8,6 +8,7 @@ using namespace std;
 #include <algorithm>
 #include <tuple>
 #include <utility>
+#include <gmpxx.h>
 #include "../include/util.h"
 #include "../include/lattice.h"
 
@@ -330,6 +331,19 @@ int modularExponentiation(int a, int e, int m) {
     return res;                                 // Resturn result
 }
 
+mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m) {
+    mpz_class res("1");
+    a %= m;
+    while (e > 0) {
+        if (e % 2 == 1) {
+            res = res * a % m;
+        }
+        a = (a * a) % m;
+        e >>= 1;
+    }
+    return res;
+}
+
 int fastModularExponentiation(int a, int e, int m) {
     a %= m;                                 // Reduce base mod m
     if (gcd(a,m) == 1) {                    // Euler theorem only works if base and mod are coprime
@@ -337,4 +351,16 @@ int fastModularExponentiation(int a, int e, int m) {
         e %= phi_m;                         // Reduce exponent by totient
     }
     return modularExponentiation(a, e, m);  // Regular modular exponentiation
+}
+
+std::vector<std::string> get_blocks(const std::string& plaintext, std::size_t size) {
+    std::vector<std::string> blocks;
+    for (std::size_t i = 0; i < plaintext.size(); i += size) {
+        blocks.push_back(plaintext.substr(i, size));
+    }
+    std::string& le = blocks.back();
+    if (le.size() < size) {
+        le.resize(size, '\0');
+    }
+    return blocks;
 }
