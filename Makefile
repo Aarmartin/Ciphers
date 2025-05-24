@@ -1,6 +1,7 @@
 # Setup
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -O2 -Iinclude -MMD -MP
+LIBS = -lgmpxx -lgmp
 
 # Directories
 SRCDIR = src
@@ -30,7 +31,7 @@ dirs:
 # Link Cipher and Util objects with each Binary
 $(BINDIR)/%: $(UTIL_OBJS) $(LIB_OBJS) $(OBJDIR)/%.o | dirs
 	@echo "Linking $@"
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 # Build Ciphers
 $(OBJDIR)/ciphers/%.o: $(CIPHDIR)/%.cpp | dirs

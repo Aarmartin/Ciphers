@@ -10,6 +10,7 @@ using Mat = vector<Vec>;
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <gmpxx.h>
 #include "../include/ciphers.h"
 #include "../include/util.h"
 
@@ -252,9 +253,73 @@ void main_affine(const string& op, const string& text, const string& fname) {
     }
 }
 
+void main_rsa(const string& op, const string& text, const string& fname, const string& kname) {
+    if (op == "encrypt") {
+        std::string str_n;
+        std::string str_e;
+
+        ifstream k(kname);
+        if (!k) {
+            cerr << "Key file not found" << endl;
+            return;
+        }
+        std::getline(k, str_n);
+        mpz_class n(str_n.c_str(),10);
+
+        std::getline(k, str_e);
+        mpz_class e(str_e.c_str(),10);
+
+        std::vector<mpz_class> ciphertext = rEncrypt(text, n, e);
+
+        string oname = filesystem::path(fname).replace_extension(".enc").string();
+        ofstream of(oname);
+        
+        for (auto &c : ciphertext) {
+            of << c.get_str(10) << "\n";
+        }
+
+        of.close();
+    }
+    else {
+        std::string str_n;
+        std::string str_d;
+
+        ifstream k(kname);
+        if (!k) {
+            cerr << "Key file not found" << endl;
+            return;
+        }
+        std::getline(k, str_n);
+        mpz_class n(str_n.c_str(),10);
+
+        std::getline(k, str_d);
+        mpz_class d(str_d.c_str(),10);
+
+        ifstream f(fname);
+        std::vector<mpz_class> input;
+        std::string line;
+        while (std::getline(f,line)) {
+            if (line.empty()) continue;
+            input.emplace_back(line, 10);
+        }
+
+        std::string plaintext = rDecrypt(input, n, d);
+        while (!plaintext.empty() && plaintext.back() == '\0') {
+            plaintext.pop_back();
+        }
+        string oname = filesystem::path(fname).replace_extension(".dec").string();
+        ofstream of(oname);
+        if (!of) {
+            cerr << "Could not open output file" << endl;
+        }
+        of << plaintext;
+        of.close();
+    }
+}
+
 int main(int argc, char** argv){
 
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
         cerr << "Usage:" << argv[0]
              << " <encryption algorithm> <[encrypt|decrypt|keygen]> <filename>"
              << endl;
@@ -264,9 +329,13 @@ int main(int argc, char** argv){
     string alg = argv[1];
     string op = argv[2];
     string fname = argv[3];
+    string kname;
+    if (argc == 5) {
+        kname = argv[4];
+    }
 
-    if (alg != "caesar" && alg != "vigenere" && alg != "affine" && alg != "lattice") {
-        cerr << "Enter a valid encryption method. (caesar, vigenere, affine)"
+    if (alg != "caesar" && alg != "vigenere" && alg != "affine" && alg != "lattice" && alg != "rsa") {
+        cerr << "Enter a valid encryption method. (caesar, vigenere, affine, rsa)"
              << endl;
         return 1;
     }
@@ -307,6 +376,9 @@ int main(int argc, char** argv){
     }
     else if (alg == "lattice") {
         main_lwe(op, text, fname);
+    }
+    else if (alg == "rsa") {
+        main_rsa(op, text, fname, kname);
     }
 
     return 0;
