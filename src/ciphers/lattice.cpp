@@ -1,11 +1,83 @@
+#include "../../include/lattice.h"
+#include "../../include/cipherutils.h"
+
 #include <vector>
+#include <string>
+#include <random>
+
+using namespace CipherUtils;
 
 using Vec = std::vector<int>;
 using Mat = std::vector<Vec>;
 
-#include <random>
-#include "../../include/lattice.h"
-#include "../../include/mod_util.h"
+std::ostream& operator<<(std::ostream& os, const CipherText& ct) {
+    os << ct.c1.size() << " ";
+    for (int v : ct.c1) os << v << " ";
+    os << ct.c2.size() << " ";
+    for (int v : ct.c2) os << v << " ";
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, CipherText& ct) {
+    size_t size_c1, size_c2;
+    is >> size_c1;
+    ct.c1.resize(size_c1);
+    for (auto& v : ct.c1) is >> v;
+
+    is >> size_c2;
+    ct.c2.resize(size_c2);
+    for (auto& v : ct.c2) is >> v;
+
+    return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const PrivateKey& sk) {
+    os << sk.s.size() << "\n";
+    for (int v : sk.s) os << v << " ";
+    os << "\n";
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, PrivateKey& sk) {
+    size_t size;
+    is >> size;
+    sk.s.resize(size);
+    for (int& v : sk.s) is >> v;
+    return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const PublicKey& pk) {
+    size_t rows = pk.A.size();
+    size_t cols = (rows > 0) ? pk.A[0].size() : 0;
+
+    os << rows << " " << cols << "\n";
+    for (const auto& row : pk.A) {
+        for (int v : row) os << v << " ";
+        os << "\n";
+    }
+
+    os << pk.b.size() << "\n";
+    for (int v : pk.b) os << v << " ";
+    os << "\n";
+
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, PublicKey& pk) {
+    size_t rows, cols;
+    is >> rows >> cols;
+    pk.A.resize(rows, std::vector<int>(cols));
+    for (auto& row : pk.A) {
+        for (int& v : row) is >> v;
+    }
+
+    size_t bsize;
+    is >> bsize;
+    pk.b.resize(bsize);
+    for (int& v : pk.b) is >> v;
+
+    return is;
+}
 
 LWE::LWE(int m_, int n_, int q_, double sigma_)
     : m(m_), n(n_), q(q_), sigma(sigma_), rng(std::random_device{}()),
@@ -38,14 +110,14 @@ void LWE::keygen(PublicKey &pk, PrivateKey &sk) {
     Vec e(m);
     for (auto &ei : e) ei = sampleGaussian();
 
-    Vec As = matVecMul(pk.A, sk.s, q);
+    Vec As = matTVecMul(pk.A, sk.s, q);
     pk.b.resize(m);
     for (int j = 0; j < m; j++) {
         pk.b[j] = mod(As[j]+e[j], q);
     }
 }
 
-CipherText LWE::encrypt(const PublicKey &pk, int msg) {
+CipherText LWE::encryptBit(const PublicKey &pk, int msg) {
     Vec r(m);
     for (auto &ri : r) ri = sampleBinary();
 
@@ -61,9 +133,25 @@ CipherText LWE::encrypt(const PublicKey &pk, int msg) {
     return {c1, Vec{c2}};
 }
 
-int LWE::decrypt(const PrivateKey &sk, const CipherText &ct) {
+int LWE::decryptBit(const PrivateKey &sk, const CipherText &ct) {
     int sci = dot(sk.s,ct.c1, q);
     int u = mod(ct.c2[0] - sci, q);
 
     return (u > q/4 && u < 3*q/4) ? 1 : 0;
+}
+
+std::vector<CipherText> LWE::encrypt(const PublicKey &pk, const std::string& plaintext) {
+    std::vector<CipherText> result;
+    for (char bit : plaintext) {
+        result.push_back(encryptBit(pk, bit - '0'));
+    }
+    return result;
+}
+
+std::string LWE::decrypt(const PrivateKey &sk, const std::vector<CipherText>& ciphertext) {
+    std::string result;
+    for (CipherText ct : ciphertext) {
+        result += static_cast<char>(decryptBit(sk, ct));
+    }
+    return result;
 }

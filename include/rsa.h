@@ -1,5 +1,5 @@
-#ifndef LATTICE_H
-#define LATTICE_H
+#ifndef RSA_H
+#define RSA_H
 
 #include <vector>
 #include <random>
