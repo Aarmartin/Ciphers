@@ -1,8 +1,10 @@
 #include "../../include/vigenere.h"
+#include "../../include/cipherutils.h"
 
-#include "char_util.h"
 #include <string>
 #include <cctype>
+
+using namespace CharUtils;
 
 VigenereCipher::VigenereCipher(std::string key)
     : key_(strtoupper(key))
@@ -16,7 +18,7 @@ std::string VigenereCipher::encrypt(const std::string& plaintext) const {
         if (isalpha(c)) {
             c = tolower(c);
             k = key_[i % key_.length()];
-            result += shiftChar(c, k - 'A');
+            result += shiftChar(c, k - 'A', 26);
             ++i;
         }
     }
@@ -30,7 +32,7 @@ std::string VigenereCipher::decrypt(const std::string& ciphertext) const {
         if (isalpha(c)) {
             c = toupper(c);
             char k = key_[i % key_.length()];
-            result += shiftChar(c, k - 'A');
+            result += shiftChar(c, k - 'A', 26);
             ++i;
         }
     }

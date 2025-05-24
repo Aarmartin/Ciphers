@@ -1,6 +1,8 @@
 #include "../../include/affine.h"
-#include "../../include/mod_util.h"
+#include "../../include/cipherutils.h"
 #include <string>
+
+using namespace CipherUtils;
 
 AffineCipher::AffineCipher(AffineKey key)
     : key_(key)
