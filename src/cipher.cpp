@@ -10,7 +10,7 @@ std::string load_text(const std::string &fname) {
     std::ifstream f(fname);
     if (!f) {
         std::cerr << "Failed to open text file." << std::endl;
-        return;
+        return "";
     }
     std::string line;
     std::string text;
@@ -62,7 +62,6 @@ void main_lwe_decrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Failed to deserialize private key from key file." << std::endl;
         return;
     }
-
     LWE cipher(1024, 512, 4093, 3.19);
     std::ifstream cipherFile(fname);
     if (!cipherFile) {
@@ -72,7 +71,7 @@ void main_lwe_decrypt(const std::string &fname, const std::string &kname) {
 
     std::vector<CipherText> ct;
     CipherText c;
-    while ((cipherFile >> c)) {
+    while (cipherFile >> c) {
         ct.push_back(c);
     }
 

@@ -20,9 +20,12 @@ std::ostream& operator<<(std::ostream& os, const CipherText& ct) {
 
 std::istream& operator>>(std::istream& is, CipherText& ct) {
     size_t size_c1, size_c2;
-    is >> size_c1;
+    if (!(is >> size_c1)) return is;
     ct.c1.resize(size_c1);
-    for (auto& v : ct.c1) is >> v;
+    for (auto& v : ct.c1) {
+
+        is >> v;
+    }
 
     is >> size_c2;
     ct.c2.resize(size_c2);
@@ -150,8 +153,10 @@ std::vector<CipherText> LWE::encrypt(const LWEPublicKey &pk, const std::string& 
 
 std::string LWE::decrypt(const LWEPrivateKey &sk, const std::vector<CipherText>& ciphertext) {
     std::string result;
+    int i;
     for (CipherText ct : ciphertext) {
-        result += static_cast<char>(decryptBit(sk, ct));
+        i = decryptBit(sk, ct);
+        result += static_cast<char>(i + '0');
     }
     return result;
 }

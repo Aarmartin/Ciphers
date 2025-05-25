@@ -1,4 +1,4 @@
-#include "include/ciphers.h"
+#include "../include/ciphers.h"
 
 #include <iostream>
 #include <filesystem>
@@ -22,8 +22,8 @@ void main_lwe_keygen(std::string fname) {
 
     LWE cipher(1024, 512, 4093, 3.19);
 
-    PublicKey pk;
-    PrivateKey sk;
+    LWEPublicKey pk;
+    LWEPrivateKey sk;
 
     cipher.keygen(pk, sk);
 

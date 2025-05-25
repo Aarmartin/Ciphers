@@ -47,7 +47,7 @@ private:
     int max_gauss_radius;
 
     std::uniform_int_distribution<int> uni_dist;
-    std::discrete_distribution<double> gauss_dist;
+    std::discrete_distribution<int> gauss_dist;
     std::uniform_int_distribution<int> tri_dist;
     std::uniform_int_distribution<int> bin_dist;
 

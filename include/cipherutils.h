@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <gmpxx.h>
 
 using Vec = std::vector<int>;
 using Mat = std::vector<Vec>;
@@ -34,7 +35,7 @@ namespace CipherUtils {
 
 namespace CharUtils {
 
-    static char shiftChar(char c, int shift, int m);
+    char shiftChar(char c, int shift, int m);
 
     std::string strtolower(std::string str);
 

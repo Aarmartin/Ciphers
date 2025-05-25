@@ -1,4 +1,4 @@
-#include "include/cipherutils.h"
+#include "../include/cipherutils.h"
 #include <utility>
 #include <vector>
 #include <cmath>
@@ -162,7 +162,7 @@ namespace CipherUtils {
 
 namespace CharUtils {
 
-    static char shiftChar(char c, int shift, int m) {
+    char shiftChar(char c, int shift, int m) {
         if (!isalpha(c)) return c;
         shift = ((shift % m) + m) % m;
         const char base = std::isupper(c) ? 'A' : 'a';

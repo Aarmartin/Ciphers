@@ -1,51 +1,61 @@
-# Setup
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -O2 -Iinclude -MMD -MP
-LIBS = -lgmpxx -lgmp
+# Compiler and flags
+CXX        := g++
+CXXFLAGS   := -std=c++17 -Wall -I$(INCDIR) -O2
+LDFLAGS    := -lgmpxx -lgmp
 
-# Directories
-SRCDIR = src
-CIPHDIR = $(SRCDIR)/ciphers
-OBJDIR = objs
-BINDIR = bin
+# Directory layout
+SRCDIR     := src
+INCDIR     := include
+OBJDIR     := obj
+BINDIR     := bin
 
-# Objects
-LIB_OBJS = $(patsubst $(CIPHDIR)/%.cpp,$(OBJDIR)/ciphers/%.o,$(wildcard $(CIPHDIR)/*.cpp))								# Ciphers
-UTIL_OBJS = $(OBJDIR)/util.o																							# Util File
-MAIN_OBJS  := $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(filter-out $(SRCDIR)/util.cpp,$(wildcard $(SRCDIR)/*.cpp)))	# Main Files
+# Source files (exclude crypta.cpp, tool.cpp, util.cpp)
+SRC_ROOT   := $(filter-out $(SRCDIR)/crypta.cpp           \
+                         $(SRCDIR)/tool.cpp              \
+                         $(SRCDIR)/util.cpp,             \
+                  $(wildcard $(SRCDIR)/*.cpp))
+SRC_CIPH   := $(wildcard $(SRCDIR)/ciphers/*.cpp)
+SRCS       := $(SRC_ROOT) $(SRC_CIPH)
 
-# Binaries
-BINNS = cipher fcipher crypta tool
-BINS = $(addprefix $(BINDIR)/,$(BINNS))
+# List of object files, all living in $(OBJDIR)
+# Strip off directories and replace .cpp → .o
+OBJS       := $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SRCS)))
 
-.PHONY: all clean dirs
+# Which object files go into each binary
+CIPHER_OBJS := $(OBJDIR)/cipher.o    \
+               $(OBJDIR)/cipherutils.o \
+               $(OBJDIR)/lattice.o  \
+               $(OBJDIR)/rsa.o
 
-all: dirs $(BINS)
+KEYGEN_OBJS := $(OBJDIR)/keygen.o    \
+               $(OBJDIR)/cipherutils.o \
+               $(OBJDIR)/lattice.o  \
+               $(OBJDIR)/rsa.o
 
-# Make Directory
+.PHONY: all clean
+
+all: dirs $(BINDIR)/cipher $(BINDIR)/keygen
+
+# ensure directories exist
 dirs:
-	@mkdir -p $(OBJDIR) \
-			$(OBJDIR)/ciphers \
-			$(BINDIR)
+	@mkdir -p $(OBJDIR) $(BINDIR)
 
-# Link Cipher and Util objects with each Binary
-$(BINDIR)/%: $(UTIL_OBJS) $(LIB_OBJS) $(OBJDIR)/%.o | dirs
-	@echo "Linking $@"
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+# Link cipher
+$(BINDIR)/cipher: $(CIPHER_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-# Build Ciphers
-$(OBJDIR)/ciphers/%.o: $(CIPHDIR)/%.cpp | dirs
-	@echo "Building $@"
+# Link keygen
+$(BINDIR)/keygen: $(KEYGEN_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+# Pattern rule: build any .o from a .cpp in src/
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Build Source Objects
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | dirs
-	@echo "Building $@"
+# Pattern rule: build any .o from a .cpp in src/ciphers/
+$(OBJDIR)/%.o: $(SRCDIR)/ciphers/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Make Clean
+# Clean out everything
 clean:
-	@echo "Cleaning..."
 	rm -rf $(OBJDIR) $(BINDIR)
-
--include $(OBJDIR)/**/*.d
