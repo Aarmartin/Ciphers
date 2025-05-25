@@ -1,116 +1,164 @@
-using namespace std;
-
+#include <vector>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <filesystem>
+#include <gmpxx.h>
 #include "../include/ciphers.h"
-#include "../include/util.h"
 
-void main_caesar(const string& op, const string& text) {
-
-    int key;
-    bool enc = op == "encrypt";
-
-    cout << "Enter your key: ";
-    cin >> key;
-    cin.ignore();
-
-    if (enc) {
-        string ciphertext = cEncrypt(text,key);
-        cout << ciphertext
-             << endl;
+std::string load_text(const std::string &fname) {
+    std::ifstream f(fname);
+    if (!f) {
+        std::cerr << "Failed to open text file." << std::endl;
+        return;
     }
-    else {
-        string plaintext = cDecrypt(text,key);
-        cout << plaintext
-             << endl;
+    std::string line;
+    std::string text;
+    while (std::getline(f, line)) {
+        text += line;
     }
-
+    return text;
 }
 
-void main_vigenere(const string& op, const string& text) {
+void main_lwe_encrypt(const std::string &fname, const std::string &kname) {
+    LWEPublicKey pk;
 
-    string key;
-    bool enc = op == "encrypt";
-
-    cout << "Enter your key: ";
-    getline(cin,key);
-
-    if (enc) {
-        string ciphertext = vEncrypt(text,key);
-        cout << ciphertext
-             << endl;
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
     }
-    else {
-        string plaintext = vDecrypt(text,key);
-        cout << plaintext
-             << endl;
-    }
-}
-
-void main_affine(const string& op, const string& text) {
-    string key;
-    int a;
-    int b;
-    bool enc = op == "encrypt";
-
-    cout << "Enter your key a,b: ";
-    cin >> key;
-    cin.ignore();
-
-    a = stoi(key.substr(0,key.find(',')));
-    b = stoi(key.substr(key.find(',') + 1));
-
-    if (gcd(a,26) != 1) {
-        cout << "Enter a valid key (First value must be coprime with 26)"
-             << endl;
+    keyFile >> pk;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize public key from key file." << std::endl;
         return;
     }
 
-    if (enc) {
-        string ciphertext = aEncrypt(text,a,b);
-        cout << ciphertext
-             << endl;
+    LWE cipher(1024, 512, 4093, 3.19);
+    std::string text = load_text(fname);
+    std::vector<CipherText> ct = cipher.encrypt(pk, text);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
     }
-    else {
-        string plaintext = aDecrypt(text,a,b);
-        cout << plaintext
-             << endl;
+    for (CipherText &c : ct) {
+        outputFile << c << "\n";
+    }
+}
+
+void main_lwe_decrypt(const std::string &fname, const std::string &kname) {
+    LWEPrivateKey sk;
+
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
+    }
+    keyFile >> sk;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize private key from key file." << std::endl;
+        return;
+    }
+
+    LWE cipher(1024, 512, 4093, 3.19);
+    std::ifstream cipherFile(fname);
+    if (!cipherFile) {
+        std::cerr << "Could not open ciphertext file." << std::endl;
+        return;
+    }
+
+    std::vector<CipherText> ct;
+    CipherText c;
+    while ((cipherFile >> c)) {
+        ct.push_back(c);
+    }
+
+    if (ct.empty()) {
+        std::cerr << "No CipherText read from file." << std::endl;
+        return;
+    }
+
+    std::string plaintext = cipher.decrypt(sk, ct);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".dec").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
+    }
+
+    outputFile << plaintext;
+}
+
+void main_rsa_encrypt(const std::string &fname, const std::string &kname) {
+    RSAPublicKey pk;
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
+    }
+    keyFile >> pk;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize public key from key file." << std::endl;
+        return;
+    }
+}
+
+void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
+    RSAPrivateKey sk;
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
+    }
+    keyFile >> sk;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize public key from key file." << std::endl;
+        return;
     }
 }
 
 int main(int argc, char** argv){
 
-    if (argc != 4) {
-        cerr << "Usage:" << argv[0]
-             << " <encryption algorithm> <[encrypt|decrypt]> <text>"
-             << endl;
-        return 1;
+    if (argc != 5) {
+        std::cerr << "Usage:" << argv[0]
+             << " <[lwe|rsa]> <[encrypt|decrypt]> <filename> <keyfile>"
+             << std::endl;
+        return -1;
     }
 
-    string alg = argv[1];
-    string op = argv[2];
-    string text = argv[3];
+    std::string alg = argv[1];
+    std::string op = argv[2];
+    std::string fname = argv[3];
+    std::string kname = argv[4];
 
-    if (alg != "caesar" && alg != "vigenere" && alg != "affine") {
-        cerr << "Enter a valid encryption method. (caesar, vigenere, affine)"
-             << endl;
+    if (alg != "lwe" && alg != "rsa") {
+        std::cerr << "Enter a valid encryption method. (lwe, rsa)"
+             << std::endl;
         return 1;
     }
 
     if (op != "encrypt" && op != "decrypt") {
-        cerr << "Enter a valid operation. (encrypt, decrypt)"
-             << endl;
+        std::cerr << "Enter a valid operation. (encrypt, decrypt)"
+             << std::endl;
         return 1;
     }
 
-    if (alg == "caesar") {
-        main_caesar(op, text);
-    }
-    else if (alg == "vigenere") {
-        main_vigenere(op, text);
-    }
-    else if (alg == "affine") {
-        main_affine(op, text);
+    if (alg == "lwe") {
+        if (op == "encrypt") {
+            main_lwe_encrypt(fname, kname);
+        } else {
+            main_lwe_decrypt(fname, kname);
+        }
+    } else if (alg == "rsa") {
+        if (op == "encrypt") {
+            main_rsa_encrypt(fname, kname);
+        } else {
+            main_rsa_decrypt(fname, kname);
+        }
     }
 
     return 0;

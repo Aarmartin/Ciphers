@@ -1,6 +1,8 @@
 #include "include/cipherutils.h"
 #include <utility>
 #include <vector>
+#include <cmath>
+#include <gmpxx.h>
 
 namespace CipherUtils {
 
@@ -87,6 +89,75 @@ namespace CipherUtils {
         return sum;
     }
 
+    // Prime Factors
+    std::vector<int> p_factors(int n) {
+        int i = 2;
+        std::vector<int> factors;
+
+        while (i * i <= n) {
+            if (n % i != 0) {
+                ++i;
+            }
+            else {
+                n /= i;
+                factors.push_back(i);
+            }
+        }
+        if (n > 1) {
+            factors.push_back(n);
+        }
+        sort(factors.begin(),factors.end());
+        factors.erase(unique(factors.begin(),factors.end()),factors.end());
+        return factors;
+    }
+
+    // Totient Function
+    int totient(int n) {
+        std::vector<int> factors = p_factors(n);
+        double res = static_cast<double>(n);
+        for (auto &p : factors) {
+            res *= (1.0 - (1.0 / p));
+        }
+        return static_cast<int>(res + 0.5);
+    }
+
+    // Modular Exponentiation
+    int modularExponentiation(int a, int e, int m) {
+        int res = 1;
+        a %= m;                                     // Reduce base mod m
+        while (e > 0) {                             // While exponent is not 0
+            if (e & 1) {                            // Check if least significant bit is a 1
+                res = res * a % m;                  // Multiply current value of result by our current base mod m
+            }
+            a = static_cast<int>(pow(a,2)) % m;     // Square base to evaluate at next power of 2
+            e >>= 1;                                // Shift exponent by 1 bit
+        }
+        return res;                                 // Resturn result
+    }
+
+    // Large Number Modular Exponentiation
+    mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m) {
+        mpz_class res("1");
+        a %= m;
+        while (e > 0) {
+            if (e % 2 == 1) {
+                res = res * a % m;
+            }
+            a = (a * a) % m;
+            e >>= 1;
+        }
+        return res;
+    }
+
+    // Fast Modular Exponentiation
+    int fastModularExponentiation(int a, int e, int m) {
+        a %= m;                                 // Reduce base mod m
+        if (gcd(a,m) == 1) {                    // Euler theorem only works if base and mod are coprime
+            int phi_m = totient(m);
+            e %= phi_m;                         // Reduce exponent by totient
+        }
+        return modularExponentiation(a, e, m);  // Regular modular exponentiation
+    }
 }
 
 namespace CharUtils {
