@@ -65,7 +65,7 @@ namespace CipherUtils {
         Vec out(m.size(), 0);
         for (std::size_t i = 0; i < m.size(); i++) {
             for (std::size_t j = 0; j < v.size(); j++) {
-                out[j] = mod(out[i] + m[i][j] * v[i],q);
+                out[j] = mod(out[j] + m[i][j] * v[i],q);
             }
         }
         return out;

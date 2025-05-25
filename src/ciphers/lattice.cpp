@@ -113,7 +113,7 @@ void LWE::keygen(LWEPublicKey &pk, LWEPrivateKey &sk) {
     Vec e(m);
     for (auto &ei : e) ei = sampleGaussian();
 
-    Vec As = matTVecMul(pk.A, sk.s, q);
+    Vec As = matVecMul(pk.A, sk.s, q);
     pk.b.resize(m);
     for (int j = 0; j < m; j++) {
         pk.b[j] = mod(As[j]+e[j], q);
