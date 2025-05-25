@@ -34,6 +34,10 @@ void main_lwe_keygen(std::string fname) {
     skf.close();
 }
 
+void main_rsa_keygen(std::string fname) {
+    return;
+}
+
 int main(int argc, char** argv){
 
     if (argc != 3) {
@@ -46,6 +50,8 @@ int main(int argc, char** argv){
 
     if (cipher == "lwe") {
         main_lwe_keygen(fname);
+    } else if (cipher == "rsa") {
+        main_rsa_keygen(fname);
     }
 
     return 1;

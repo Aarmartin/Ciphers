@@ -25,6 +25,11 @@ namespace CipherUtils {
 
     int dot(const Vec &u, const Vec &v, int q);
 
+    int modularExponentiation(int a, int e, int m);
+
+    mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m);
+
+    int fastModularExponentiation(int a, int e, int m);
 }
 
 namespace CharUtils {
