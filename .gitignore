@@ -3,6 +3,7 @@ text/
 
 # Output Files
 objs/
+obj/
 bin/
 *.o
 
