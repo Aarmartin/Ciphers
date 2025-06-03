@@ -364,3 +364,32 @@ std::vector<std::string> get_blocks(const std::string& plaintext, std::size_t si
     }
     return blocks;
 }
+
+int jacobi(int m, int n) {
+
+    if (n == 0 || n % 2 == 0) throw std::invalid_argument("n must be odd and > 0");
+
+    // Base Cases
+    if (m == 0) return 0;
+    if (m == 1) return 1;
+
+    // Reduce Mod n
+    m = m % n;
+
+    // Not relatively prime, return 0
+    if (gcd(m, n) != 1) return 0;
+
+    // Reduce powers of 2
+    int result = 1;
+    bool odd_twos = false;
+    while (m % 2 == 0) {
+        odd_twos ^= 1;
+        m /= 2;
+    }
+    if (odd_twos && (n % 8 == 3 || n % 8 == 5)) result = -result;   // If there are an odd number of 2s, and 2/n & 8 === +- 3, add -1 to product
+    if (m == 1) return result; // Return result if power of 2 reduction reduced to 1
+
+    // Flip and reduce
+    if (m % 4 == 3 && n % 4 == 3) result = -result;
+    return result * jacobi(n % m, m);
+}
