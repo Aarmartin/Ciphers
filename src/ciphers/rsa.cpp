@@ -55,6 +55,37 @@ StrVec RSA::get_blocks(const std::string& plaintext, std::size_t size) {
     return blocks;
 }
 
+RSA::RSA() {}
+
+void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
+    std::cout << "Generating prime p..." << std::endl;
+    mpz_class p = generatePrime(1024);
+    std::cout << "Generating prime q..." << std::endl;
+    mpz_class q = generatePrime(1024);
+
+    mpz_class n = p * q;
+
+    mpz_class e;
+    mpz_class gcd;
+    std::cout << "Value of n: " << n.get_mpz_t() << std::endl;
+    do
+    {
+        std::cout << "Generating candidate e..." << std::endl;
+        e = generateLessThan(n);
+        mpz_gcd(gcd.get_mpz_t(), n.get_mpz_t(), e.get_mpz_t());
+    } while (gcd != 1);
+    
+    std::cout << "Calculating d..." << std::endl;
+    mpz_class d = modInverse(e, n);
+
+    std::cout << "Assigning Keys..." << std::endl;
+    pk.n = n;
+    pk.e = e;
+
+    sk.n = n;
+    sk.d = d;
+}
+
 IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
     StrVec blocks = get_blocks(plaintext, 214);
     IntVec cblocks;

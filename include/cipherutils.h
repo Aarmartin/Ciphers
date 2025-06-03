@@ -16,6 +16,10 @@ namespace CipherUtils {
 
     int modInverse(int a, int m);
 
+    mpz_class modInverse(mpz_class a, mpz_class m);
+
+    std::tuple<mpz_class,mpz_class> modInverseRecursiveLoop(mpz_class a, mpz_class m);
+
     void modVec(Vec& v, int q);
 
     Vec matVecMul(const Mat &m, const Vec &v, int q);
@@ -31,6 +35,16 @@ namespace CipherUtils {
     mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m);
 
     int fastModularExponentiation(int a, int e, int m);
+
+    mpz_class jacobi(mpz_class m, mpz_class n);
+
+    mpz_class generateNumber(size_t size);
+
+    mpz_class generateLessThan(mpz_class &number);
+
+    bool isPrime(mpz_class number);
+
+    mpz_class generatePrime(size_t size);
 }
 
 namespace CharUtils {

@@ -1,8 +1,10 @@
 #include "../include/cipherutils.h"
 #include <utility>
 #include <vector>
+#include <tuple>
 #include <cmath>
 #include <random>
+#include <iostream>
 #include <gmpxx.h>
 
 namespace CipherUtils {
@@ -43,6 +45,34 @@ namespace CipherUtils {
         y = (y + m_orig) % m_orig;              // Ensure positive result mod m for the second coefficient
 
         return y;                               // Return Coefficient
+    }
+
+    // Modular Inverse Initial Call
+    mpz_class modInverse(mpz_class a, mpz_class m) {
+        auto [x,y] = modInverseRecursiveLoop(a, m);
+        x = (x + m) % m;    // Ensure positive result mod m for the first coefficient
+        return x;
+    }
+
+    std::tuple<mpz_class,mpz_class> modInverseRecursiveLoop(mpz_class a, mpz_class m) {
+
+        // Base Case
+        if (m == 1) {
+            return {0, 1};
+        }
+
+        mpz_class x, x_p, y, y_p, q, r;
+
+        q = a / m;                                      // Find the quotient of the two values
+        r = a % m;                                      // Find the remainder of the two values
+
+        std::tie(x_p, y_p) = modInverseRecursiveLoop(m, r);  // Retrieve previous x and y values from one level down with recursive call on x and y
+
+        // ax + my = g => ay' + m(y'- qx') = g
+        x = y_p;                                        // x becomes y'
+        y = x_p - y_p * q;                              // y becomes x' - y' * q
+
+        return {x, y};                                  // Return new coefficients
     }
 
     // Vector in Modular q
@@ -160,36 +190,96 @@ namespace CipherUtils {
         return modularExponentiation(a, e, m);  // Regular modular exponentiation
     }
 
+    mpz_class jacobi(mpz_class m, mpz_class n) {
+
+        if (n == 0 || n % 2 == 0) throw std::invalid_argument("n must be odd and > 0");
+
+        // Base Cases
+        if (m == 0) return 0;
+        if (m == 1) return 1;
+
+        // Reduce Mod n
+        m %= n;
+
+        // Not relatively prime, return 0
+        mpz_class gcd;
+        mpz_gcd(gcd.get_mpz_t(),m.get_mpz_t(), n.get_mpz_t());
+        if (gcd != 1) return 0;
+
+        // Reduce powers of 2
+        mpz_class result = 1;
+        bool odd_twos = false;
+        while (m % 2 == 0) {
+            odd_twos ^= 1;
+            m /= 2;
+        }
+        if (odd_twos && (n % 8 == 3 || n % 8 == 5)) result = -result;   // If there are an odd number of 2s, and 2/n & 8 === +- 3, add -1 to product
+        if (m == 1) return result; // Return result if power of 2 reduction reduced to 1
+
+        // Flip and reduce
+        if (m % 4 == 3 && n % 4 == 3) result = -result;
+        return result * jacobi(n % m, m);
+    }
+
     // Generate Large Number
     mpz_class generateNumber(size_t size) {
         std::random_device rd;
         std::mt19937_64 gen(rd());
 
         mpz_class result = 0;
-        for (int i = 0; i < size; i += 64) {
+
+        size_t blocks = size / 64;
+        size_t r = size % 64;
+
+        for (size_t i = 0; i < blocks; i++) {
             uint64_t bs = gen();
             result <<= 64;
             result += bs;
         }
 
-        result |= (mpz_class(1) << size - 1);
+        if (r > 0) {
+            uint64_t block = gen();
+            block &= ((uint64_t(1) << r) - 1);
+            result <<= r;
+            result += block;
+        }
+
+        result |= (mpz_class(1) << (size - 1));
 
         return result;
     }
 
-    // Test for Primality
-    bool isPrime(mpz_class number) {
-        mpz_class witness;
+    mpz_class generateLessThan(mpz_class &number) {
+        mpz_class candidate;
         do
         {
-            witness = generateNumber(mpz_sizeinbase(number.get_mpz_t(), 2));
-        } while (witness > number);
+            candidate = generateNumber(mpz_sizeinbase(number.get_mpz_t(), 2));
+        } while (candidate >= number);
+        return candidate;
+    }
+
+    // Test for Primality
+    bool isPrime(mpz_class number) {
+        if (number < 2) return false;
+        if (number == 2) return true;
+        if (number % 2 == 0) return false;
+        mpz_class witness;
         mpz_class gcd;
-        mpz_gcd(gcd.get_mpz_t(), witness.get_mpz_t(), number.get_mpz_t());
-        if (gcd != 1) return false;
         mpz_class abs;
-        mpz_abs(abs.get_mpz_t(),largeModularExponentiation(witness, (number-1)/2,number).get_mpz_t());
-        if (abs == 1) return false;
+        mpz_class euler;
+        mpz_class j;
+        for (int i = 0; i < 56; i++) {
+            do
+            {
+                witness = generateNumber(mpz_sizeinbase(number.get_mpz_t(), 2));
+            } while (witness >= number || witness == 0);
+            mpz_gcd(gcd.get_mpz_t(), witness.get_mpz_t(), number.get_mpz_t());
+            if (gcd != 1) return false;
+            euler = largeModularExponentiation(witness, (number-1)/2,number);
+            j = jacobi(witness, number);
+            if (j == -1) j = number - 1;
+            if (euler != j) return false;
+        }
         return true;
     }
 
@@ -199,6 +289,7 @@ namespace CipherUtils {
         do
         {
             candidate = generateNumber(size);
+            candidate |= (mpz_class(1) << (size - 2));
             candidate |= 1;
         } while (!isPrime(candidate));
         return candidate;

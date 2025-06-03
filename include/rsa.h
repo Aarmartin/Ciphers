@@ -25,7 +25,7 @@ class RSA {
 public:
     explicit RSA();
 
-    void keygen(mpz_class& key);
+    void keygen(RSAPublicKey& pk, RSAPrivateKey& sk);
     std::vector<mpz_class> encrypt(const std::string& plaintext, RSAPublicKey &pk);
     std::string decrypt(const std::vector<mpz_class>& ciphertext, RSAPrivateKey &sk);
 
