@@ -104,6 +104,22 @@ void main_rsa_encrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Failed to deserialize public key from key file." << std::endl;
         return;
     }
+
+    std::string text = load_text(fname);
+
+    RSA cipher;
+
+    RSACipherText ct;
+    ct.ct = cipher.encrypt(text, pk);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
+    }
+
+    outputFile << ct;
 }
 
 void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
@@ -118,6 +134,29 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Failed to deserialize public key from key file." << std::endl;
         return;
     }
+
+    std::ifstream cipherFile(fname);
+    if (!cipherFile) {
+        std::cerr << "Could not open ciphertext file." << std::endl;
+        return;
+    }
+
+    RSACipherText ct;
+
+    cipherFile >> ct;
+
+    RSA cipher;
+
+    std::string plaintext = cipher.decrypt(ct, sk);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".dec").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
+    }
+    std::cout << plaintext << std::endl;
+    outputFile << plaintext;
 }
 
 int main(int argc, char** argv){

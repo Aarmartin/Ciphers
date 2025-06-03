@@ -43,6 +43,28 @@ std::istream& operator>>(std::istream& is, RSAPrivateKey& sk) {
     return is;
 }
 
+std::ostream& operator<<(std::ostream& os, const RSACipherText& ct) {
+    os << ct.ct.size() << '\n';
+    for (const auto& block : ct.ct) {
+        os << block.get_str(16) << '\n';
+    }
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, RSACipherText& ct) {
+    size_t count;
+    is >> count;
+    ct.ct.clear();
+    ct.ct.reserve(count);
+
+    std::string block;
+    for (size_t i = 0; i < count; i++) {
+        is >> block;
+        ct.ct.emplace_back(block, 16);
+    }
+    return is;
+}
+
 StrVec RSA::get_blocks(const std::string& plaintext, std::size_t size) {
     StrVec blocks;
     for (std::size_t i = 0; i < plaintext.size(); i += size) {
@@ -101,9 +123,9 @@ IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
     return cblocks;
 }
 
-std::string RSA::decrypt(const IntVec& ciphertext, RSAPrivateKey &sk) {
+std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
     std::string result;
-    for (auto& block : ciphertext) {
+    for (auto& block : ciphertext.ct) {
         mpz_class p;
         //mpz_powm(p.get_mpz_t(),block.get_mpz_t(),d.get_mpz_t(),n.get_mpz_t());
         p = largeModularExponentiation(block,sk.d,sk.n);
