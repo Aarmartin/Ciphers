@@ -2,6 +2,7 @@
 #include <utility>
 #include <vector>
 #include <cmath>
+#include <random>
 #include <gmpxx.h>
 
 namespace CipherUtils {
@@ -157,6 +158,50 @@ namespace CipherUtils {
             e %= phi_m;                         // Reduce exponent by totient
         }
         return modularExponentiation(a, e, m);  // Regular modular exponentiation
+    }
+
+    // Generate Large Number
+    mpz_class generateNumber(size_t size) {
+        std::random_device rd;
+        std::mt19937_64 gen(rd());
+
+        mpz_class result = 0;
+        for (int i = 0; i < size; i += 64) {
+            uint64_t bs = gen();
+            result <<= 64;
+            result += bs;
+        }
+
+        result |= (mpz_class(1) << size - 1);
+
+        return result;
+    }
+
+    // Test for Primality
+    bool isPrime(mpz_class number) {
+        mpz_class witness;
+        do
+        {
+            witness = generateNumber(mpz_sizeinbase(number.get_mpz_t(), 2));
+        } while (witness > number);
+        mpz_class gcd;
+        mpz_gcd(gcd.get_mpz_t(), witness.get_mpz_t(), number.get_mpz_t());
+        if (gcd != 1) return false;
+        mpz_class abs;
+        mpz_abs(abs.get_mpz_t(),largeModularExponentiation(witness, (number-1)/2,number).get_mpz_t());
+        if (abs == 1) return false;
+        return true;
+    }
+
+    // Generate Large Prime
+    mpz_class generatePrime(size_t size) {
+        mpz_class candidate;
+        do
+        {
+            candidate = generateNumber(size);
+            candidate |= 1;
+        } while (!isPrime(candidate));
+        return candidate;
     }
 }
 
