@@ -3,8 +3,11 @@ using namespace std;
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "../include/util.h"
+#include "../include/cipherutils.h"
 
+using namespace CipherUtils;
+
+/*
 void affine_key_finder() {
     string plain;
     string cipher;
@@ -113,74 +116,65 @@ void phi_finder(int n) {
 void fme_finder(int a, int e, int m) {
     cout << "Result of pow(" << a << "," << e << ") (mod " << m << ") = " << fastModularExponentiation(a, e, m) << " (mod " << m << ")" << endl;
 }
+*/
+
+void lme_solver(std::string a_str, std::string e_str, std::string m_str) {
+    mpz_class a(a_str);
+    mpz_class e(e_str);
+    mpz_class m(m_str);
+
+    std::cout << "Result of Large Modular Exponentiation:\n" << largeModularExponentiation(a, e, m).get_str() << std::endl;
+}
+
+void prime_checker(std::string number_str) {
+    mpz_class number(number_str);
+    cout << "Is Prime? " << isPrime(number) << std::endl;
+}
+
+void minverse_finder(std::string n_str, std::string m_str) {
+    mpz_class n(n_str);
+    mpz_class m(m_str);
+
+    std::cout << "Modular Inverse: " << modInverse(n, m).get_str() << std::endl;
+}
+
+void inverse_checker(std::string a_str, std::string b_str, std::string m_str) {
+    mpz_class a(a_str);
+    mpz_class b(b_str);
+    mpz_class m(m_str);
+
+    mpz_class res = (a * b) % m;
+    std::cout << "Result of (a * b) % m: " << res.get_str() << std::endl;
+}
 
 int main(int argc, char** argv) {
     
     if (argc < 2) {
-        cout << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc> [arguments]"
+        cout << "Usage: " << argv[0] << " <lme|prime|minverse|inverses> [arguments]"
              << endl;
         return 1;
     }
 
     string tool = argv[1];
 
-    if (tool != "findkey" && tool != "minverse" && tool != "mtable" && tool !="frequency" && tool != "soc" && tool != "phi" && tool != "fme") {
-        cerr << "Usage: " << argv[0] << " <findkey|minverse|mtable|frequency|soc|phi|fme> [arguments]"
+    if (tool != "lme" && tool != "prime" && tool != "minverse" && tool != "inverses") {
+        cerr << "Usage: " << argv[0] << " <lme|prime|minverse|inverses> [arguments]"
              << endl;
         return 1;
     }
 
-    if (tool == "findkey") {
-        affine_key_finder();
+    if (tool == "lme") {
+        lme_solver(argv[2], argv[3], argv[4]);
+    }
+    else if (tool == "prime") {
+        prime_checker(argv[2]);
     }
     else if (tool == "minverse") {
-        if (argc != 4 || !isNumber(argv[2]) || !isNumber(argv[3])) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <int> <int>"
-                 << endl;
-            return 1;
-        }
-        mod_inverse(stoi(argv[2]),stoi(argv[3]));
+        minverse_finder(argv[2], argv[3]);
     }
-    else if (tool == "mtable") {
-        if (argc != 3 || !isNumber(argv[2])) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <int>"
-                 << endl;
-            return 1;
-        }
-        mod_table(stoi(argv[2]));
+    else if (tool == "inverses") {
+        inverse_checker(argv[2], argv[3], argv[4]);
     }
-    else if (tool == "frequency") {
-        if (argc != 3) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <filename>"
-                 << endl;
-            return 1;
-        }
-        frequency_finder(argv[2]);
-    }
-    else if (tool == "soc") {
-        if (argc != 6) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <x_1> <n_1> <x_2> <n_2>"
-                 << endl;
-            return 1;
-        }
-        soc_solver(stoi(argv[2]),stoi(argv[3]),stoi(argv[4]),stoi(argv[5]));
-    }
-    else if (tool == "phi") {
-        if (argc != 3) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <int>"
-                 << endl;
-            return 1;
-        }
-        phi_finder(stoi(argv[2]));
-    }
-    else if (tool == "fme") {
-        if (argc != 5) {
-            cout << "Usage: " << argv[0] << " " << argv[1] << " <int> <int> <int>"
-                 << endl;
-            return 1;
-        }
-        fme_finder(stoi(argv[2]),stoi(argv[3]),stoi(argv[4]));
-    }
-
+    
     return 1;
 }

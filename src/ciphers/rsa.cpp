@@ -46,7 +46,7 @@ std::istream& operator>>(std::istream& is, RSAPrivateKey& sk) {
 std::ostream& operator<<(std::ostream& os, const RSACipherText& ct) {
     os << ct.ct.size() << '\n';
     for (const auto& block : ct.ct) {
-        os << block.get_str(16) << '\n';
+        os << block.get_str() << '\n';
     }
     return os;
 }
@@ -60,7 +60,7 @@ std::istream& operator>>(std::istream& is, RSACipherText& ct) {
     std::string block;
     for (size_t i = 0; i < count; i++) {
         is >> block;
-        ct.ct.emplace_back(block, 16);
+        ct.ct.emplace_back(block);
     }
     return is;
 }
@@ -80,20 +80,31 @@ StrVec RSA::get_blocks(const std::string& plaintext, std::size_t size) {
 RSA::RSA() {}
 
 void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
+    std::cout << "Generating prime p..." << std::endl;
     mpz_class p = generatePrime(1024);
+    std::cout << "p: " << p << std::endl;
+    std::cout << "Generating prime q..." << std::endl;
     mpz_class q = generatePrime(1024);
+    std::cout << "q: " << q << std::endl;
 
+    std::cout << "Calculating n..." << std::endl;
     mpz_class n = p * q;
+    std::cout << n << std::endl;
+    std::cout << "Calculating φ(n)..." << std::endl;
+    mpz_class phi_n = (p-1) * (q-1);
 
     mpz_class e;
     mpz_class gcd;
+    std::cout << "Calculating e..." << std::endl;
     do
     {
-        e = generateLessThan(n);
-        mpz_gcd(gcd.get_mpz_t(), n.get_mpz_t(), e.get_mpz_t());
+        e = generateLessThan(phi_n);
+        mpz_gcd(gcd.get_mpz_t(), phi_n.get_mpz_t(), e.get_mpz_t());
     } while (gcd != 1);
-    
-    mpz_class d = modInverse(e, n);
+    std::cout << "e: " << e << std::endl;
+    std::cout << "Calculating d..." << std::endl;
+    mpz_class d = modInverse(e, phi_n);
+    std::cout << "d: " << d << std::endl;
 
     pk.n = n;
     pk.e = e;
@@ -119,7 +130,9 @@ IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
 
 std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
     std::string result;
+    std::cout << "Decrypting text:" << std::endl;
     for (auto& block : ciphertext.ct) {
+        std::cout << "\tNew Block:" << block << std::endl;
         mpz_class p;
         //mpz_powm(p.get_mpz_t(),block.get_mpz_t(),d.get_mpz_t(),n.get_mpz_t());
         p = largeModularExponentiation(block,sk.d,sk.n);
@@ -128,6 +141,7 @@ std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
         std::vector<unsigned char> out(count ? count : 1);
         mpz_export(out.data(),&count,1,1,0,0,p.get_mpz_t());
         std::string s(reinterpret_cast<char*>(out.data()),count);
+        std::cout << "\t\tBlock String: " << s << std::endl;
         result.append(s);
     }
     while (!result.empty() && result.back() == '\0') {

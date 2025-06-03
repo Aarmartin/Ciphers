@@ -5,6 +5,9 @@
 #include <filesystem>
 #include <gmpxx.h>
 #include "../include/ciphers.h"
+#include "../include/cipherutils.h"
+
+using namespace CharUtils;
 
 std::string load_text(const std::string &fname) {
     std::ifstream f(fname);
@@ -15,7 +18,7 @@ std::string load_text(const std::string &fname) {
     std::string line;
     std::string text;
     while (std::getline(f, line)) {
-        text += line;
+        text += line + '\n';
     }
     return text;
 }
@@ -36,6 +39,7 @@ void main_lwe_encrypt(const std::string &fname, const std::string &kname) {
 
     LWE cipher(1024, 512, 4093, 3.19);
     std::string text = load_text(fname);
+    text = sanatizeBits(text);
     std::vector<CipherText> ct = cipher.encrypt(pk, text);
 
     std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();
@@ -144,7 +148,6 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
     RSACipherText ct;
 
     cipherFile >> ct;
-
     RSA cipher;
 
     std::string plaintext = cipher.decrypt(ct, sk);
@@ -155,6 +158,7 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Could not open output file." << std::endl;
         return;
     }
+    //std::cout << plaintext << std::endl;
     outputFile << plaintext;
 }
 

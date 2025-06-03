@@ -9,9 +9,9 @@ INCDIR     := include
 OBJDIR     := obj
 BINDIR     := bin
 
+#                          $(SRCDIR)/tool.cpp              \
 # Source files (exclude crypta.cpp, tool.cpp, util.cpp)
 SRC_ROOT   := $(filter-out $(SRCDIR)/crypta.cpp           \
-                         $(SRCDIR)/tool.cpp              \
                          $(SRCDIR)/util.cpp,             \
                   $(wildcard $(SRCDIR)/*.cpp))
 SRC_CIPH   := $(wildcard $(SRCDIR)/ciphers/*.cpp)
@@ -32,9 +32,12 @@ KEYGEN_OBJS := $(OBJDIR)/keygen.o    \
                $(OBJDIR)/lattice.o  \
                $(OBJDIR)/rsa.o
 
+TOOL_OBJS	:= $(OBJDIR)/tool.o		\
+			   $(OBJDIR)/cipherutils.o \
+
 .PHONY: all clean
 
-all: dirs $(BINDIR)/cipher $(BINDIR)/keygen
+all: dirs $(BINDIR)/cipher $(BINDIR)/keygen $(BINDIR)/tool
 
 # ensure directories exist
 dirs:
@@ -46,6 +49,10 @@ $(BINDIR)/cipher: $(CIPHER_OBJS)
 
 # Link keygen
 $(BINDIR)/keygen: $(KEYGEN_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+# Link tool
+$(BINDIR)/tool: $(TOOL_OBJS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 # Pattern rule: build any .o from a .cpp in src/

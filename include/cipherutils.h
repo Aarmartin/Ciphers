@@ -54,6 +54,8 @@ namespace CharUtils {
     std::string strtolower(std::string str);
 
     std::string strtoupper(std::string str);
+
+    std::string sanatizeBits(const std::string& text);
 }
 
 #endif

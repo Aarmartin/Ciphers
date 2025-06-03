@@ -56,8 +56,8 @@ namespace CipherUtils {
     std::tuple<mpz_class,mpz_class> modInverseRecursiveLoop(mpz_class a, mpz_class m) {
 
         // Base Case
-        if (m == 1) {
-            return {0, 1};
+        if (m == 0) {
+            return {1, 0};
         }
 
         mpz_class x, x_p, y, y_p, q, r;
@@ -320,5 +320,13 @@ namespace CharUtils {
             result += toupper(c);
         }
         return result;
+    }
+
+    std::string sanatizeBits(const std::string& text) {
+        std::string bitstring;
+        for (char c : text) {
+            if (c == '0' || c == '1') bitstring += c;
+        }
+        return bitstring;
     }
 }
