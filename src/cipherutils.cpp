@@ -4,6 +4,7 @@
 #include <tuple>
 #include <cmath>
 #include <random>
+#include <iostream>
 #include <gmpxx.h>
 
 namespace CipherUtils {
@@ -285,12 +286,16 @@ namespace CipherUtils {
     // Generate Large Prime
     mpz_class generatePrime(size_t size) {
         mpz_class candidate;
+        int count = 0;
         do
         {
+            count++;
             candidate = generateNumber(size);
             candidate |= (mpz_class(1) << (size - 2));
             candidate |= 1;
         } while (!isPrime(candidate));
+        std::cout << "Tested: " << count << " numbers." << std::endl;
+        std::cout << "Utilized 55 rounds of witnesses with a probability of error: " << (1024*log2(2)) / (1024*log(2)*(pow(2,55))) << std::endl;
         return candidate;
     }
 }

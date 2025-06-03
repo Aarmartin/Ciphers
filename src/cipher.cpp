@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <set>
 #include <fstream>
 #include <filesystem>
 #include <gmpxx.h>
@@ -8,6 +9,16 @@
 #include "../include/cipherutils.h"
 
 using namespace CharUtils;
+
+void print_usage() {
+    std::cout << "Usage:\n"
+              << "\tcipher <cipher_type> <action> <input_file> <key_file>\n"
+              << "Where:\n"
+              << "\t<cipher_type>\t= rsa | lwe\n"
+              << "\t<action>\t= encrypt | decrypt\n"
+              << "\t<input_file>\t= path to text file\n"
+              << "\t<key_file>\t= path to key file\n";
+}
 
 std::string load_text(const std::string &fname) {
     std::ifstream f(fname);
@@ -158,44 +169,46 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Could not open output file." << std::endl;
         return;
     }
-    //std::cout << plaintext << std::endl;
+
     outputFile << plaintext;
 }
 
 int main(int argc, char** argv){
 
+    const std::set<std::string> valid_ciphers = {"rsa", "lwe"};
+    const std::set<std::string> valid_actions = {"encrypt", "decrypt"};
+
     if (argc != 5) {
-        std::cerr << "Usage:" << argv[0]
-             << " <[lwe|rsa]> <[encrypt|decrypt]> <filename> <keyfile>"
-             << std::endl;
+        std::cerr << "Error: Incorrect number of arguments.\n";
+        print_usage();
         return -1;
     }
 
-    std::string alg = argv[1];
-    std::string op = argv[2];
+    std::string cipher_type = argv[1];
+    std::string action = argv[2];
     std::string fname = argv[3];
     std::string kname = argv[4];
 
-    if (alg != "lwe" && alg != "rsa") {
-        std::cerr << "Enter a valid encryption method. (lwe, rsa)"
-             << std::endl;
-        return 1;
+    if (valid_ciphers.find(cipher_type) == valid_ciphers.end()) {
+        std::cerr << "Error: Invalid cipher type '" << cipher_type << "'.\n";
+        print_usage();
+        return -1;
     }
 
-    if (op != "encrypt" && op != "decrypt") {
-        std::cerr << "Enter a valid operation. (encrypt, decrypt)"
-             << std::endl;
-        return 1;
+    if (valid_actions.find(action) == valid_actions.end()) {
+        std::cerr << "Error: Invalid action '" << action << "'.\n";
+        print_usage();
+        return -1;
     }
 
-    if (alg == "lwe") {
-        if (op == "encrypt") {
+    if (cipher_type == "lwe") {
+        if (action == "encrypt") {
             main_lwe_encrypt(fname, kname);
         } else {
             main_lwe_decrypt(fname, kname);
         }
-    } else if (alg == "rsa") {
-        if (op == "encrypt") {
+    } else if (cipher_type== "rsa") {
+        if (action == "encrypt") {
             main_rsa_encrypt(fname, kname);
         } else {
             main_rsa_decrypt(fname, kname);

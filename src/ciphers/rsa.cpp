@@ -82,16 +82,17 @@ RSA::RSA() {}
 void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
     std::cout << "Generating prime p..." << std::endl;
     mpz_class p = generatePrime(1024);
-    std::cout << "p: " << p << std::endl;
+    std::cout << "p: " << p << "\n" << std::endl;
     std::cout << "Generating prime q..." << std::endl;
     mpz_class q = generatePrime(1024);
-    std::cout << "q: " << q << std::endl;
+    std::cout << "q: " << q << "\n" << std::endl;
 
     std::cout << "Calculating n..." << std::endl;
     mpz_class n = p * q;
-    std::cout << n << std::endl;
+    std::cout << "n: " << n << "\n" << std::endl;
     std::cout << "Calculating φ(n)..." << std::endl;
     mpz_class phi_n = (p-1) * (q-1);
+    std::cout << "φ(n): " << phi_n << "\n" << std::endl;
 
     mpz_class e;
     mpz_class gcd;
@@ -101,7 +102,7 @@ void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
         e = generateLessThan(phi_n);
         mpz_gcd(gcd.get_mpz_t(), phi_n.get_mpz_t(), e.get_mpz_t());
     } while (gcd != 1);
-    std::cout << "e: " << e << std::endl;
+    std::cout << "e: " << e << "\n" << std::endl;
     std::cout << "Calculating d..." << std::endl;
     mpz_class d = modInverse(e, phi_n);
     std::cout << "d: " << d << std::endl;

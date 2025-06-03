@@ -3,6 +3,15 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <set>
+
+void print_usage() {
+    std::cout << "Usage:\n"
+              << "\tkeygen <cipher_type> <key_file>\n"
+              << "Where:\n"
+              << "\t<cipher_type>\t= rsa | lwe\n"
+              << "\t<key_file>\t= key file name\n";
+}
 
 void main_lwe_keygen(std::string fname) {
 
@@ -65,17 +74,26 @@ void main_rsa_keygen(std::string fname) {
 
 int main(int argc, char** argv){
 
+    const std::set<std::string> valid_ciphers = {"rsa", "lwe"};
+
     if (argc != 3) {
-        std::cerr << "Bad Parameters" << std::endl;
+        std::cerr << "Error: Incorrect number of arguments.\n";
+        print_usage();
         return -1;
     }
 
-    std::string cipher = argv[1];
+    std::string cipher_type = argv[1];
     std::string fname = argv[2];
 
-    if (cipher == "lwe") {
+    if (valid_ciphers.find(cipher_type) == valid_ciphers.end()) {
+        std::cerr << "Error: Invalid cipher type '" << cipher_type << "'.\n";
+        print_usage();
+        return -1;
+    }
+
+    if (cipher_type == "lwe") {
         main_lwe_keygen(fname);
-    } else if (cipher == "rsa") {
+    } else if (cipher_type == "rsa") {
         main_rsa_keygen(fname);
     }
 
