@@ -4,7 +4,6 @@
 #include <tuple>
 #include <cmath>
 #include <random>
-#include <iostream>
 #include <gmpxx.h>
 
 namespace CipherUtils {

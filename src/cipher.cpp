@@ -155,7 +155,6 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Could not open output file." << std::endl;
         return;
     }
-    std::cout << plaintext << std::endl;
     outputFile << plaintext;
 }
 
