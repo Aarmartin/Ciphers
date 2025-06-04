@@ -80,13 +80,17 @@ StrVec RSA::get_blocks(const std::string& plaintext, std::size_t size) {
 RSA::RSA() {}
 
 void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
+    // Generate 2 1024 bit primes
     std::cout << "**** Generating prime number p ****\n";
     mpz_class p = Primes::generatePrime(1024);
     std::cout << "\n**** Generating prime number q ****\n";
     mpz_class q = Primes::generatePrime(1024);
+
+    // Calculate n and φ(n)
     mpz_class n = p * q;
     mpz_class phi_n = (p-1) * (q-1);
 
+    // Find random value of e coprime with n
     mpz_class e;
     mpz_class gcd;
     do
@@ -94,6 +98,8 @@ void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
         e = Primes::generateLessThan(phi_n);
         mpz_gcd(gcd.get_mpz_t(), phi_n.get_mpz_t(), e.get_mpz_t());
     } while (gcd != 1);
+
+    // Calculate e inverse d (mod φ(n))
     mpz_class d = Arithmetic::modInverse(e, phi_n);
 
     pk.n = n;
@@ -104,7 +110,7 @@ void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
 }
 
 IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
-    StrVec blocks = get_blocks(plaintext, 214);
+    StrVec blocks = get_blocks(plaintext, 214); // Separate into blocks
     IntVec cblocks;
 
     for (auto& block : blocks) {
@@ -112,8 +118,8 @@ IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
         mpz_import(bi.get_mpz_t(),block.size(),1,1,0,0,block.data());
         mpz_class c;
         //mpz_powm(c.get_mpz_t(),bi.get_mpz_t(),e.get_mpz_t(),n.get_mpz_t());
-        c = Exponentiation::largeModularExponentiation(bi,pk.e,pk.n);
-        cblocks.push_back(c);
+        c = Exponentiation::largeModularExponentiation(bi,pk.e,pk.n);   // Calculate m^e (mod n)
+        cblocks.push_back(c); // Push block onto ciphertext
     }
     return cblocks;
 }
@@ -123,7 +129,7 @@ std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
     for (auto& block : ciphertext.ct) {
         mpz_class p;
         //mpz_powm(p.get_mpz_t(),block.get_mpz_t(),d.get_mpz_t(),n.get_mpz_t());
-        p = Exponentiation::largeModularExponentiation(block,sk.d,sk.n);
+        p = Exponentiation::largeModularExponentiation(block,sk.d,sk.n);    // Calculate c^d (mod n)
         std::size_t count = 0;
         mpz_export(nullptr,&count,1,1,0,0,p.get_mpz_t());
         std::vector<unsigned char> out(count ? count : 1);
@@ -131,6 +137,7 @@ std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
         std::string s(reinterpret_cast<char*>(out.data()),count);
         result.append(s);
     }
+    // Remove trailing null characters
     while (!result.empty() && result.back() == '\0') {
         result.pop_back();
     }

@@ -301,6 +301,7 @@ namespace CipherUtils::Primes {
         return result;
     }
 
+    // Generate Large Number less than other Number
     mpz_class generateLessThan(mpz_class &number) {
         mpz_class candidate;
         do
@@ -318,6 +319,7 @@ namespace CipherUtils::Primes {
 
     // Test for Primality
     bool isPrime(mpz_class number) {
+        // Edge cases
         if (number < 2) return false;
         if (number == 2) return true;
         if (number % 2 == 0) return false;
@@ -328,14 +330,20 @@ namespace CipherUtils::Primes {
         mpz_class euler;
         mpz_class j;
 
+        // Calculate value of k for guaranteed probability
         int k = find_k(size);
         for (int i = 0; i < k; i++) {
+            // Generate witness
             do
             {
                 witness = generateNumber(size);
             } while (witness >= number || witness == 0);
+
+            // Check gcd
             mpz_gcd(gcd.get_mpz_t(), witness.get_mpz_t(), number.get_mpz_t());
             if (gcd != 1) return false;
+
+            // Check Jacobi symbol
             euler = Exponentiation::largeModularExponentiation(witness, (number-1)/2,number);
             j = NumberTheory::jacobi(witness, number);
             if (j == -1) j = number - 1;
@@ -352,8 +360,8 @@ namespace CipherUtils::Primes {
         {
             count++;
             candidate = generateNumber(size);
-            candidate |= (mpz_class(1) << (size - 2));
-            candidate |= 1;
+            candidate |= (mpz_class(1) << (size - 2));  // Top two bits to 1 (Distance of p from power of 2)
+            candidate |= 1; // Last bit is 1 for odd
         } while (!isPrime(candidate));
         std::cout << "Tested: " << count << " numbers." << std::endl;
         std::cout << "Utilized " << find_k(size) << " rounds of witnesses with a probability of error: " << (static_cast<double>(size)*std::log(2) - 2) / (static_cast<double>(size)*std::log(2) - 2 + (std::pow(2,55 + 1))) << std::endl;
