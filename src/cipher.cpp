@@ -51,7 +51,7 @@ void main_lwe_encrypt(const std::string &fname, const std::string &kname) {
     LWE cipher(1024, 512, 4093, 3.19);
     std::string text = load_text(fname);
     text = Text::sanatizeBits(text);
-    std::vector<CipherText> ct = cipher.encrypt(pk, text);
+    LWECipherText ct = cipher.encrypt(pk, text);
 
     std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();
     std::ofstream outputFile(oname);
@@ -59,9 +59,7 @@ void main_lwe_encrypt(const std::string &fname, const std::string &kname) {
         std::cerr << "Could not open output file." << std::endl;
         return;
     }
-    for (CipherText &c : ct) {
-        outputFile << c << "\n";
-    }
+    outputFile << ct << std::endl;
 }
 
 void main_lwe_decrypt(const std::string &fname, const std::string &kname) {
@@ -84,16 +82,8 @@ void main_lwe_decrypt(const std::string &fname, const std::string &kname) {
         return;
     }
 
-    std::vector<CipherText> ct;
-    CipherText c;
-    while (cipherFile >> c) {
-        ct.push_back(c);
-    }
-
-    if (ct.empty()) {
-        std::cerr << "No CipherText read from file." << std::endl;
-        return;
-    }
+    LWECipherText ct;
+    cipherFile >> ct;
 
     std::string plaintext = cipher.decrypt(sk, ct);
 

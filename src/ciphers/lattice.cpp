@@ -4,32 +4,40 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <iostream>
 
 using namespace CipherUtils;
 
 using Vec = std::vector<int>;
 using Mat = std::vector<Vec>;
 
-std::ostream& operator<<(std::ostream& os, const CipherText& ct) {
-    os << ct.c1.size() << " ";
-    for (int v : ct.c1) os << v << " ";
-    os << ct.c2.size() << " ";
-    for (int v : ct.c2) os << v << " ";
+std::ostream& operator<<(std::ostream& os, const LWECipherText& ct) {
+    os << ct.ct.size() << '\n';
+    for (const auto &cb : ct.ct) {
+        os << cb.c1.size() << ' ';
+        for (int v : cb.c1) os << v << ' ';
+        os << cb.c2.size() << ' ';
+        for (int v : cb.c2) os << v << ' ';
+        os << '\n';
+    }
     return os;
 }
 
-std::istream& operator>>(std::istream& is, CipherText& ct) {
-    size_t size_c1, size_c2;
-    if (!(is >> size_c1)) return is;
-    ct.c1.resize(size_c1);
-    for (auto& v : ct.c1) {
+std::istream& operator>>(std::istream& is, LWECipherText& ct) {
+    size_t numBits;
+    is >> numBits;
+    ct.ct.resize(numBits);
+    for (auto &cb : ct.ct) {
+        size_t size_c1, size_c2;
 
-        is >> v;
+        is >> size_c1;
+        cb.c1.resize(size_c1);
+        for (auto& v : cb.c1) is >> v;
+
+        is >> size_c2;
+        cb.c2.resize(size_c2);
+        for (auto& v : cb.c2) is >> v;
     }
-
-    is >> size_c2;
-    ct.c2.resize(size_c2);
-    for (auto& v : ct.c2) is >> v;
 
     return is;
 }
@@ -120,7 +128,7 @@ void LWE::keygen(LWEPublicKey &pk, LWEPrivateKey &sk) {
     }
 }
 
-CipherText LWE::encryptBit(const LWEPublicKey &pk, int msg) {
+LWECipherBit LWE::encryptBit(const LWEPublicKey &pk, int msg) {
     Vec r(m);
     for (auto &ri : r) ri = sampleBinary();
 
@@ -136,25 +144,25 @@ CipherText LWE::encryptBit(const LWEPublicKey &pk, int msg) {
     return {c1, Vec{c2}};
 }
 
-int LWE::decryptBit(const LWEPrivateKey &sk, const CipherText &ct) {
+int LWE::decryptBit(const LWEPrivateKey &sk, const LWECipherBit &ct) {
     int sci = VectorOps::dot(sk.s,ct.c1, q);
     int u = Arithmetic::mod(ct.c2[0] - sci, q);
 
     return (u > q/4 && u < 3*q/4) ? 1 : 0;
 }
 
-std::vector<CipherText> LWE::encrypt(const LWEPublicKey &pk, const std::string& plaintext) {
-    std::vector<CipherText> result;
+LWECipherText LWE::encrypt(const LWEPublicKey &pk, const std::string& plaintext) {
+    LWECipherText result;
     for (char bit : plaintext) {
-        result.push_back(encryptBit(pk, bit - '0'));
+        result.ct.push_back(encryptBit(pk, bit - '0'));
     }
     return result;
 }
 
-std::string LWE::decrypt(const LWEPrivateKey &sk, const std::vector<CipherText>& ciphertext) {
+std::string LWE::decrypt(const LWEPrivateKey &sk, const LWECipherText& ciphertext) {
     std::string result;
     int i;
-    for (CipherText ct : ciphertext) {
+    for (LWECipherBit ct : ciphertext.ct) {
         i = decryptBit(sk, ct);
         result += static_cast<char>(i + '0');
     }

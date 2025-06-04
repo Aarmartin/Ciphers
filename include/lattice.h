@@ -17,13 +17,17 @@ struct LWEPrivateKey {
     Vec s;
 };
 
-struct CipherText {
+struct LWECipherBit {
     Vec c1;
     Vec c2;
 };
 
-std::ostream& operator<<(std::ostream& os, const CipherText& ct);
-std::istream& operator>>(std::istream& is, CipherText& ct);
+struct LWECipherText {
+    std::vector<LWECipherBit> ct;
+};
+
+std::ostream& operator<<(std::ostream& os, const LWECipherText& ct);
+std::istream& operator>>(std::istream& is, LWECipherText& ct);
 std::ostream& operator<<(std::ostream& os, const LWEPrivateKey& sk);
 std::istream& operator>>(std::istream& is, LWEPrivateKey& sk);
 std::ostream& operator<<(std::ostream& os, const LWEPublicKey& pk);
@@ -34,10 +38,10 @@ public:
     explicit LWE(int m, int n, int q, double sigma);
 
     void keygen(LWEPublicKey &pk, LWEPrivateKey &sk);
-    CipherText encryptBit(const LWEPublicKey &pk, int msg);
-    int decryptBit(const LWEPrivateKey &sk, const CipherText &ct);
-    std::vector<CipherText> encrypt(const LWEPublicKey &pk, const std::string& plaintext);
-    std::string decrypt(const LWEPrivateKey &sk, const std::vector<CipherText>& ciphertext);
+    LWECipherBit encryptBit(const LWEPublicKey &pk, int msg);
+    int decryptBit(const LWEPrivateKey &sk, const LWECipherBit &ct);
+    LWECipherText encrypt(const LWEPublicKey &pk, const std::string& plaintext);
+    std::string decrypt(const LWEPrivateKey &sk, const LWECipherText& ciphertext);
 
 private:
     int m, n;
