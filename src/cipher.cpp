@@ -8,7 +8,7 @@
 #include "../include/ciphers.h"
 #include "../include/cipherutils.h"
 
-using namespace CharUtils;
+using namespace CipherUtils;
 
 void print_usage() {
     std::cout << "Usage:\n"
@@ -50,7 +50,7 @@ void main_lwe_encrypt(const std::string &fname, const std::string &kname) {
 
     LWE cipher(1024, 512, 4093, 3.19);
     std::string text = load_text(fname);
-    text = sanatizeBits(text);
+    text = Text::sanatizeBits(text);
     std::vector<CipherText> ct = cipher.encrypt(pk, text);
 
     std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();

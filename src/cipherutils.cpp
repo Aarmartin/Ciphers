@@ -7,7 +7,7 @@
 #include <iostream>
 #include <gmpxx.h>
 
-namespace CipherUtils {
+namespace CipherUtils::Arithmetic {
 
     // Greatest Common Divisor
     int gcd(int a, int b) {
@@ -75,9 +75,13 @@ namespace CipherUtils {
         return {x, y};                                  // Return new coefficients
     }
 
+}
+
+namespace CipherUtils::VectorOps {
+
     // Vector in Modular q
     void modVec(Vec& v, int q) {
-        for (auto &x : v) x = mod(x, q);
+        for (auto &x : v) x = Arithmetic::mod(x, q);
     }
 
     // Matrix Vector Multiplication in Modular q
@@ -85,7 +89,7 @@ namespace CipherUtils {
         Vec out(m.size(), 0);
         for (std::size_t i = 0; i < m.size(); i++) {
             for (std::size_t j = 0; j < v.size(); j++) {
-                out[i] = mod(out[i] + m[i][j] * v[j],q);
+                out[i] = Arithmetic::mod(out[i] + m[i][j] * v[j],q);
             }
         }
         return out;
@@ -96,7 +100,7 @@ namespace CipherUtils {
         Vec out(m.size(), 0);
         for (std::size_t i = 0; i < m.size(); i++) {
             for (std::size_t j = 0; j < v.size(); j++) {
-                out[j] = mod(out[j] + m[i][j] * v[i],q);
+                out[j] = Arithmetic::mod(out[j] + m[i][j] * v[i],q);
             }
         }
         return out;
@@ -106,7 +110,7 @@ namespace CipherUtils {
     Vec vecAdd(const Vec &u, const Vec &v, int q) {
         Vec out(v.size(),0);
         for (std::size_t i = 0; i < u.size(); i++) {
-            out[i] = mod(u[i] + v[i], q);
+            out[i] = Arithmetic::mod(u[i] + v[i], q);
         }
         return out;
     }
@@ -115,10 +119,14 @@ namespace CipherUtils {
     int dot(const Vec &u, const Vec &v, int q) {
         int sum = 0;
         for (std::size_t i = 0; i < u.size(); i++) {
-            sum = mod(sum + u[i] * v[i], q);
+            sum = Arithmetic::mod(sum + u[i] * v[i], q);
         }
         return sum;
     }
+
+}
+
+namespace CipherUtils::Exponentiation {
 
     // Prime Factors
     std::vector<int> p_factors(int n) {
@@ -166,6 +174,16 @@ namespace CipherUtils {
         return res;                                 // Resturn result
     }
 
+    // Fast Modular Exponentiation
+    int fastModularExponentiation(int a, int e, int m) {
+        a %= m;                                 // Reduce base mod m
+        if (Arithmetic::gcd(a,m) == 1) {                    // Euler theorem only works if base and mod are coprime
+            int phi_m = totient(m);
+            e %= phi_m;                         // Reduce exponent by totient
+        }
+        return modularExponentiation(a, e, m);  // Regular modular exponentiation
+    }
+
     // Large Number Modular Exponentiation
     mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m) {
         mpz_class res("1");
@@ -180,15 +198,9 @@ namespace CipherUtils {
         return res;
     }
 
-    // Fast Modular Exponentiation
-    int fastModularExponentiation(int a, int e, int m) {
-        a %= m;                                 // Reduce base mod m
-        if (gcd(a,m) == 1) {                    // Euler theorem only works if base and mod are coprime
-            int phi_m = totient(m);
-            e %= phi_m;                         // Reduce exponent by totient
-        }
-        return modularExponentiation(a, e, m);  // Regular modular exponentiation
-    }
+}
+
+namespace CipherUtils::NumberTheory {
 
     mpz_class jacobi(mpz_class m, mpz_class n) {
 
@@ -220,6 +232,10 @@ namespace CipherUtils {
         if (m % 4 == 3 && n % 4 == 3) result = -result;
         return result * jacobi(n % m, m);
     }
+
+}
+
+namespace CipherUtils::Primes {
 
     // Generate Large Number
     mpz_class generateNumber(size_t size) {
@@ -258,25 +274,34 @@ namespace CipherUtils {
         return candidate;
     }
 
+    // Calculate k from Error Bound
+    int find_k(size_t size) {
+        int k = std::ceil(std::log2((static_cast<double>(size)*std::log(2) - 2)/(0.00000000000001)) - 1);
+        return k; 
+    }
+
     // Test for Primality
     bool isPrime(mpz_class number) {
         if (number < 2) return false;
         if (number == 2) return true;
         if (number % 2 == 0) return false;
+        size_t size = mpz_sizeinbase(number.get_mpz_t(), 2);
         mpz_class witness;
         mpz_class gcd;
         mpz_class abs;
         mpz_class euler;
         mpz_class j;
-        for (int i = 0; i < 56; i++) {
+
+        int k = find_k(size);
+        for (int i = 0; i < k; i++) {
             do
             {
-                witness = generateNumber(mpz_sizeinbase(number.get_mpz_t(), 2));
+                witness = generateNumber(size);
             } while (witness >= number || witness == 0);
             mpz_gcd(gcd.get_mpz_t(), witness.get_mpz_t(), number.get_mpz_t());
             if (gcd != 1) return false;
-            euler = largeModularExponentiation(witness, (number-1)/2,number);
-            j = jacobi(witness, number);
+            euler = Exponentiation::largeModularExponentiation(witness, (number-1)/2,number);
+            j = NumberTheory::jacobi(witness, number);
             if (j == -1) j = number - 1;
             if (euler != j) return false;
         }
@@ -295,12 +320,12 @@ namespace CipherUtils {
             candidate |= 1;
         } while (!isPrime(candidate));
         std::cout << "Tested: " << count << " numbers." << std::endl;
-        std::cout << "Utilized 55 rounds of witnesses with a probability of error: " << (1024*log2(2)) / (1024*log(2)*(pow(2,55))) << std::endl;
+        std::cout << "Utilized 55 rounds of witnesses with a probability of error: " << (static_cast<double>(size)*std::log(2) - 2) / (static_cast<double>(size)*std::log(2) - 2 + (std::pow(2,55 + 1))) << std::endl;
         return candidate;
     }
 }
 
-namespace CharUtils {
+namespace CipherUtils::Text {
 
     char shiftChar(char c, int shift, int m) {
         if (!isalpha(c)) return c;

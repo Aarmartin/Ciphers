@@ -2,7 +2,7 @@
 #include "../../include/cipherutils.h"
 #include <string>
 
-using namespace CharUtils;
+using namespace CipherUtils;
 
 CaesarCipher::CaesarCipher(int key)
     : key_( ((key % 26) + 26) % 26)
@@ -14,7 +14,7 @@ std::string CaesarCipher::encrypt(const std::string& plaintext) const {
     for (char c : plaintext) {
         if (isalpha(c)) {
             c = tolower(c);
-            result += shiftChar(c, key_, 26);
+            result += Text::shiftChar(c, key_, 26);
         }
         else result += c;
     }
@@ -23,5 +23,5 @@ std::string CaesarCipher::encrypt(const std::string& plaintext) const {
 
 std::string CaesarCipher::decrypt(const std::string& ciphertext) const {
     CaesarCipher reverse(26 - key_);
-    return strtolower(reverse.encrypt(ciphertext));
+    return Text::strtolower(reverse.encrypt(ciphertext));
 }

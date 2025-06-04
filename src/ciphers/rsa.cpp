@@ -80,32 +80,21 @@ StrVec RSA::get_blocks(const std::string& plaintext, std::size_t size) {
 RSA::RSA() {}
 
 void RSA::keygen(RSAPublicKey &pk, RSAPrivateKey &sk) {
-    std::cout << "Generating prime p..." << std::endl;
-    mpz_class p = generatePrime(1024);
-    std::cout << "p: " << p << "\n" << std::endl;
-    std::cout << "Generating prime q..." << std::endl;
-    mpz_class q = generatePrime(1024);
-    std::cout << "q: " << q << "\n" << std::endl;
-
-    std::cout << "Calculating n..." << std::endl;
+    std::cout << "**** Generating prime number p ****\n";
+    mpz_class p = Primes::generatePrime(1024);
+    std::cout << "\n**** Generating prime number q ****\n";
+    mpz_class q = Primes::generatePrime(1024);
     mpz_class n = p * q;
-    std::cout << "n: " << n << "\n" << std::endl;
-    std::cout << "Calculating φ(n)..." << std::endl;
     mpz_class phi_n = (p-1) * (q-1);
-    std::cout << "φ(n): " << phi_n << "\n" << std::endl;
 
     mpz_class e;
     mpz_class gcd;
-    std::cout << "Calculating e..." << std::endl;
     do
     {
-        e = generateLessThan(phi_n);
+        e = Primes::generateLessThan(phi_n);
         mpz_gcd(gcd.get_mpz_t(), phi_n.get_mpz_t(), e.get_mpz_t());
     } while (gcd != 1);
-    std::cout << "e: " << e << "\n" << std::endl;
-    std::cout << "Calculating d..." << std::endl;
-    mpz_class d = modInverse(e, phi_n);
-    std::cout << "d: " << d << std::endl;
+    mpz_class d = Arithmetic::modInverse(e, phi_n);
 
     pk.n = n;
     pk.e = e;
@@ -123,7 +112,7 @@ IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
         mpz_import(bi.get_mpz_t(),block.size(),1,1,0,0,block.data());
         mpz_class c;
         //mpz_powm(c.get_mpz_t(),bi.get_mpz_t(),e.get_mpz_t(),n.get_mpz_t());
-        c = largeModularExponentiation(bi,pk.e,pk.n);
+        c = Exponentiation::largeModularExponentiation(bi,pk.e,pk.n);
         cblocks.push_back(c);
     }
     return cblocks;
@@ -136,7 +125,7 @@ std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
         std::cout << "\tNew Block:" << block << std::endl;
         mpz_class p;
         //mpz_powm(p.get_mpz_t(),block.get_mpz_t(),d.get_mpz_t(),n.get_mpz_t());
-        p = largeModularExponentiation(block,sk.d,sk.n);
+        p = Exponentiation::largeModularExponentiation(block,sk.d,sk.n);
         std::size_t count = 0;
         mpz_export(nullptr,&count,1,1,0,0,p.get_mpz_t());
         std::vector<unsigned char> out(count ? count : 1);

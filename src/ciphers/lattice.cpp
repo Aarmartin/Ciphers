@@ -108,15 +108,15 @@ void LWE::keygen(LWEPublicKey &pk, LWEPrivateKey &sk) {
     pk.A.assign(m, Vec(n));
     for (auto &row : pk.A)
         for (auto &aij : row)
-            aij = mod(sampleUniform(),q);
+            aij = Arithmetic::mod(sampleUniform(),q);
 
     Vec e(m);
     for (auto &ei : e) ei = sampleGaussian();
 
-    Vec As = matVecMul(pk.A, sk.s, q);
+    Vec As = VectorOps::matVecMul(pk.A, sk.s, q);
     pk.b.resize(m);
     for (int j = 0; j < m; j++) {
-        pk.b[j] = mod(As[j]+e[j], q);
+        pk.b[j] = Arithmetic::mod(As[j]+e[j], q);
     }
 }
 
@@ -127,18 +127,18 @@ CipherText LWE::encryptBit(const LWEPublicKey &pk, int msg) {
     Vec e1(n),e2(1);
     for (auto &x : e1) x = sampleGaussian();
     e2[0] = sampleGaussian();
-    Vec c1 = matTVecMul(pk.A, r, q); // Transpose A Matrix Vector Multiplication
-    for (int i = 0; i < n; i++) c1[i] = mod(c1[i] + e1[i], q);
+    Vec c1 = VectorOps::matTVecMul(pk.A, r, q); // Transpose A Matrix Vector Multiplication
+    for (int i = 0; i < n; i++) c1[i] = Arithmetic::mod(c1[i] + e1[i], q);
 
-    int br = dot(pk.b,r,q);
-    int c2 = mod(br + e2[0] + (q/2)*msg, q);
+    int br = VectorOps::dot(pk.b,r,q);
+    int c2 = Arithmetic::mod(br + e2[0] + (q/2)*msg, q);
 
     return {c1, Vec{c2}};
 }
 
 int LWE::decryptBit(const LWEPrivateKey &sk, const CipherText &ct) {
-    int sci = dot(sk.s,ct.c1, q);
-    int u = mod(ct.c2[0] - sci, q);
+    int sci = VectorOps::dot(sk.s,ct.c1, q);
+    int u = Arithmetic::mod(ct.c2[0] - sci, q);
 
     return (u > q/4 && u < 3*q/4) ? 1 : 0;
 }

@@ -3,6 +3,7 @@ using namespace std;
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <set>
 #include "../include/cipherutils.h"
 
 using namespace CipherUtils;
@@ -123,19 +124,19 @@ void lme_solver(std::string a_str, std::string e_str, std::string m_str) {
     mpz_class e(e_str);
     mpz_class m(m_str);
 
-    std::cout << "Result of Large Modular Exponentiation:\n" << largeModularExponentiation(a, e, m).get_str() << std::endl;
+    std::cout << "Result of Large Modular Exponentiation:\n" << Exponentiation::largeModularExponentiation(a, e, m).get_str() << std::endl;
 }
 
 void prime_checker(std::string number_str) {
     mpz_class number(number_str);
-    cout << "Is Prime? " << isPrime(number) << std::endl;
+    cout << "Is Prime? " << Primes::isPrime(number) << std::endl;
 }
 
 void minverse_finder(std::string n_str, std::string m_str) {
     mpz_class n(n_str);
     mpz_class m(m_str);
 
-    std::cout << "Modular Inverse: " << modInverse(n, m).get_str() << std::endl;
+    std::cout << "Modular Inverse: " << Arithmetic::modInverse(n, m).get_str() << std::endl;
 }
 
 void inverse_checker(std::string a_str, std::string b_str, std::string m_str) {
@@ -148,6 +149,8 @@ void inverse_checker(std::string a_str, std::string b_str, std::string m_str) {
 }
 
 int main(int argc, char** argv) {
+
+    std::set<std::string> valid_tools = {"test"};
     
     if (argc < 2) {
         cout << "Usage: " << argv[0] << " <lme|prime|minverse|inverses> [arguments]"
