@@ -120,9 +120,7 @@ IntVec RSA::encrypt(const std::string& plaintext, RSAPublicKey &pk) {
 
 std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
     std::string result;
-    std::cout << "Decrypting text:" << std::endl;
     for (auto& block : ciphertext.ct) {
-        std::cout << "\tNew Block:" << block << std::endl;
         mpz_class p;
         //mpz_powm(p.get_mpz_t(),block.get_mpz_t(),d.get_mpz_t(),n.get_mpz_t());
         p = Exponentiation::largeModularExponentiation(block,sk.d,sk.n);
@@ -131,7 +129,6 @@ std::string RSA::decrypt(const RSACipherText& ciphertext, RSAPrivateKey &sk) {
         std::vector<unsigned char> out(count ? count : 1);
         mpz_export(out.data(),&count,1,1,0,0,p.get_mpz_t());
         std::string s(reinterpret_cast<char*>(out.data()),count);
-        std::cout << "\t\tBlock String: " << s << std::endl;
         result.append(s);
     }
     while (!result.empty() && result.back() == '\0') {
