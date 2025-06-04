@@ -8,6 +8,18 @@ using namespace std;
 
 using namespace CipherUtils;
 
+void print_usage() {
+    std::cout << "Usage:\n"
+              << "\ttool gcd <a> <b>\n"
+              << "\ttool minverse <a> <mod>\n"
+              << "\ttool inverses <a> <b> <mod>\n"
+              << "\ttool soc <a> <m> <b> <n>\n"
+              << "\ttool totient <n>\n"
+              << "\ttool fme <base> <exp> <mod>\n"
+              << "\ttool prime <size>\n"
+              << "\ttool isprime <n>\n";
+}
+
 /*
 void affine_key_finder() {
     string plain;
@@ -119,12 +131,12 @@ void fme_finder(int a, int e, int m) {
 }
 */
 
-void lme_solver(std::string a_str, std::string e_str, std::string m_str) {
+void fme_solver(std::string a_str, std::string e_str, std::string m_str) {
     mpz_class a(a_str);
     mpz_class e(e_str);
     mpz_class m(m_str);
 
-    std::cout << "Result of Large Modular Exponentiation:\n" << Exponentiation::largeModularExponentiation(a, e, m).get_str() << std::endl;
+    std::cout << "Result of Modular Exponentiation:\n" << Exponentiation::largeModularExponentiation(a, e, m).get_str() << std::endl;
 }
 
 void prime_checker(std::string number_str) {
@@ -148,28 +160,38 @@ void inverse_checker(std::string a_str, std::string b_str, std::string m_str) {
     std::cout << "Result of (a * b) % m: " << res.get_str() << std::endl;
 }
 
+void soc_solver(int a, int m, int b, int n) {
+    std::cout << "System of Congruence: " << Arithmetic::soc(a,m,b,n) << std::endl;
+}
+
+void totient_finder(int n) {
+    std::cout << "φ(n): " << Arithmetic::totient(n) << std::endl;
+}
+
+void prime_generator(size_t size) {
+    std::cout << Primes::generatePrime(size) << std::endl;
+}
+
 int main(int argc, char** argv) {
 
-    std::set<std::string> valid_tools = {"test"};
+    std::set<std::string> valid_tools = {"gcd","minverse","inverses","soc","totient","fme","isprime","prime"};
     
     if (argc < 2) {
-        cout << "Usage: " << argv[0] << " <lme|prime|minverse|inverses> [arguments]"
-             << endl;
-        return 1;
+        print_usage();
+        return -1;
     }
 
     string tool = argv[1];
 
-    if (tool != "lme" && tool != "prime" && tool != "minverse" && tool != "inverses") {
-        cerr << "Usage: " << argv[0] << " <lme|prime|minverse|inverses> [arguments]"
-             << endl;
-        return 1;
+    if (valid_tools.find(tool) == valid_tools.end()) {
+        print_usage();
+        return -1;
     }
 
-    if (tool == "lme") {
-        lme_solver(argv[2], argv[3], argv[4]);
+    if (tool == "fme") {
+        fme_solver(argv[2], argv[3], argv[4]);
     }
-    else if (tool == "prime") {
+    else if (tool == "isprime") {
         prime_checker(argv[2]);
     }
     else if (tool == "minverse") {
@@ -177,6 +199,15 @@ int main(int argc, char** argv) {
     }
     else if (tool == "inverses") {
         inverse_checker(argv[2], argv[3], argv[4]);
+    }
+    else if (tool == "soc") {
+        soc_solver(stoi(argv[2]), stoi(argv[3]), stoi(argv[4]), stoi(argv[5]));
+    }
+    else if (tool == "totient") {
+        totient_finder(stoi(argv[2]));
+    }
+    else if (tool == "prime") {
+        prime_generator(stoi(argv[2]));
     }
     
     return 1;

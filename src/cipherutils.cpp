@@ -47,6 +47,42 @@ namespace CipherUtils::Arithmetic {
         return y;                               // Return Coefficient
     }
 
+    int soc(int a, int m, int b, int n) {
+        int n_inv = modInverse(n, m);  // Find inverse of n (mod m)
+        int m_inv = modInverse(m, n);  // Find inverse of m (mod n)
+        return (a*n*n_inv + b*m*m_inv) % (m*n);
+    }
+
+    std::vector<int> p_factors(int n) {
+        int i = 2;
+        std::vector<int> factors;
+
+        while (i * i <= n) {
+            if (n % i != 0) {
+                ++i;
+            }
+            else {
+                n /= i;
+                factors.push_back(i);
+            }
+        }
+        if (n > 1) {
+            factors.push_back(n);
+        }
+        sort(factors.begin(),factors.end());
+        factors.erase(unique(factors.begin(),factors.end()),factors.end());
+        return factors;
+    }
+
+    int totient(int n) {
+        std::vector<int> factors = p_factors(n);
+        double res = static_cast<double>(n);
+        for (auto &p : factors) {
+            res *= (1.0 - (1.0 / p));
+        }
+        return static_cast<int>(res + 0.5);
+    }
+
     // Modular Inverse Initial Call
     mpz_class modInverse(mpz_class a, mpz_class m) {
         auto [x,y] = modInverseRecursiveLoop(a, m);
@@ -320,7 +356,7 @@ namespace CipherUtils::Primes {
             candidate |= 1;
         } while (!isPrime(candidate));
         std::cout << "Tested: " << count << " numbers." << std::endl;
-        std::cout << "Utilized 55 rounds of witnesses with a probability of error: " << (static_cast<double>(size)*std::log(2) - 2) / (static_cast<double>(size)*std::log(2) - 2 + (std::pow(2,55 + 1))) << std::endl;
+        std::cout << "Utilized " << find_k(size) << " rounds of witnesses with a probability of error: " << (static_cast<double>(size)*std::log(2) - 2) / (static_cast<double>(size)*std::log(2) - 2 + (std::pow(2,55 + 1))) << std::endl;
         return candidate;
     }
 }

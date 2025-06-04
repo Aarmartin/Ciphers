@@ -14,6 +14,8 @@ namespace CipherUtils {
         int gcd(int a, int b);
         int mod(int a, int m);
         int modInverse(int a, int m);
+        int soc(int a, int m, int b, int n);
+        int totient(int n);
         mpz_class modInverse(mpz_class a, mpz_class m);
         std::tuple<mpz_class,mpz_class> modInverseRecursiveLoop(mpz_class a, mpz_class m);
     }
