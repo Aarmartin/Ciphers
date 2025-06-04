@@ -163,9 +163,74 @@ void main_rsa_decrypt(const std::string &fname, const std::string &kname) {
     outputFile << plaintext;
 }
 
+void main_affine_encrypt(const std::string& fname, const std::string& kname) {
+    AffineKey k;
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
+    }
+    keyFile >> k;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize public key from key file." << std::endl;
+        return;
+    }
+
+    std::string text = load_text(fname);
+
+    AffineCipher cipher;
+
+    std::string ct = cipher.encrypt(text, k);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".enc").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
+    }
+
+    outputFile << ct;
+}
+
+void main_affine_decrypt(const std::string& fname, const std::string& kname) {
+    AffineKey k;
+    std::ifstream keyFile(kname);
+    if (!keyFile) {
+        std::cerr << "Could not open Key file." << std::endl;
+        return;
+    }
+    keyFile >> k;
+    if (!keyFile) {
+        std::cerr << "Failed to deserialize public key from key file." << std::endl;
+        return;
+    }
+
+    std::ifstream cipherFile(fname);
+    if (!cipherFile) {
+        std::cerr << "Could not open ciphertext file." << std::endl;
+        return;
+    }
+
+    std::string ct;
+    cipherFile >> ct;
+
+    AffineCipher cipher;
+
+    std::string plaintext = cipher.decrypt(ct, k);
+
+    std::string oname = std::filesystem::path(fname).replace_extension(".dec").string();
+    std::ofstream outputFile(oname);
+    if (!outputFile) {
+        std::cerr << "Could not open output file." << std::endl;
+        return;
+    }
+
+    outputFile << plaintext;
+}
+
 int main(int argc, char** argv){
 
-    const std::set<std::string> valid_ciphers = {"rsa", "lwe"};
+    const std::set<std::string> valid_ciphers = {"rsa", "lwe", "affine"};
     const std::set<std::string> valid_actions = {"encrypt", "decrypt"};
 
     if (argc != 5) {
@@ -197,11 +262,17 @@ int main(int argc, char** argv){
         } else {
             main_lwe_decrypt(fname, kname);
         }
-    } else if (cipher_type== "rsa") {
+    } else if (cipher_type == "rsa") {
         if (action == "encrypt") {
             main_rsa_encrypt(fname, kname);
         } else {
             main_rsa_decrypt(fname, kname);
+        }
+    } else if (cipher_type == "affine") {
+        if (action == "encrypt") {
+            main_affine_encrypt(fname, kname);
+        } else {
+            main_affine_decrypt(fname, kname);
         }
     }
 

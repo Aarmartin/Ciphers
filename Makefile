@@ -22,15 +22,17 @@ SRCS       := $(SRC_ROOT) $(SRC_CIPH)
 OBJS       := $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SRCS)))
 
 # Which object files go into each binary
-CIPHER_OBJS := $(OBJDIR)/cipher.o    \
+CIPHER_OBJS := $(OBJDIR)/cipher.o      \
                $(OBJDIR)/cipherutils.o \
-               $(OBJDIR)/lattice.o  \
-               $(OBJDIR)/rsa.o
+               $(OBJDIR)/lattice.o     \
+               $(OBJDIR)/rsa.o         \
+			   $(OBJDIR)/affine.o
 
-KEYGEN_OBJS := $(OBJDIR)/keygen.o    \
+KEYGEN_OBJS := $(OBJDIR)/keygen.o      \
                $(OBJDIR)/cipherutils.o \
-               $(OBJDIR)/lattice.o  \
-               $(OBJDIR)/rsa.o
+               $(OBJDIR)/lattice.o     \
+               $(OBJDIR)/rsa.o         \
+			   $(OBJDIR)/affine.o
 
 TOOL_OBJS	:= $(OBJDIR)/tool.o		\
 			   $(OBJDIR)/cipherutils.o \

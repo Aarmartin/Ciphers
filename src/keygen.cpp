@@ -9,7 +9,7 @@ void print_usage() {
     std::cout << "Usage:\n"
               << "\tkeygen <cipher_type> <key_file>\n"
               << "Where:\n"
-              << "\t<cipher_type>\t= rsa | lwe\n"
+              << "\t<cipher_type>\t= rsa | lwe | affine\n"
               << "\t<key_file>\t= key file name\n";
 }
 
@@ -72,9 +72,29 @@ void main_rsa_keygen(std::string fname) {
     skf.close();
 }
 
+void main_affine_keygen(std::string fname) {
+    std::string oname = std::filesystem::path(fname).replace_extension(".key").string();
+
+    std::ofstream kf(oname);
+    if (!kf) {
+        std::cerr << "Could not open Public Key File" << std::endl;
+        return;
+    }
+
+    AffineCipher cipher;
+
+    AffineKey k;
+
+    cipher.keygen(k);
+
+    kf << k;
+
+    kf.close();
+}
+
 int main(int argc, char** argv){
 
-    const std::set<std::string> valid_ciphers = {"rsa", "lwe"};
+    const std::set<std::string> valid_ciphers = {"rsa", "lwe", "affine"};
 
     if (argc != 3) {
         std::cerr << "Error: Incorrect number of arguments.\n";
@@ -95,6 +115,8 @@ int main(int argc, char** argv){
         main_lwe_keygen(fname);
     } else if (cipher_type == "rsa") {
         main_rsa_keygen(fname);
+    } else if (cipher_type == "affine") {
+        main_affine_keygen(fname);
     }
 
     return 1;
