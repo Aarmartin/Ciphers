@@ -11,9 +11,7 @@ BINDIR     := bin
 
 #                          $(SRCDIR)/tool.cpp              \
 # Source files (exclude crypta.cpp, tool.cpp, util.cpp)
-SRC_ROOT   := $(filter-out $(SRCDIR)/crypta.cpp           \
-                         $(SRCDIR)/util.cpp,             \
-                  $(wildcard $(SRCDIR)/*.cpp))
+SRC_ROOT   := $(wildcard $(SRCDIR)/*.cpp))
 SRC_CIPH   := $(wildcard $(SRCDIR)/ciphers/*.cpp)
 SRCS       := $(SRC_ROOT) $(SRC_CIPH)
 
