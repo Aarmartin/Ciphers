@@ -43,6 +43,7 @@ namespace CipherUtils {
         mpz_class generateLessThan(mpz_class &number);
         bool isPrime(mpz_class number);
         mpz_class generatePrime(size_t size);
+        mpz_class generateSophieGermainPrime(size_t size);
     }
 
     namespace Text {

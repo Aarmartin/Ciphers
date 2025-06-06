@@ -367,6 +367,16 @@ namespace CipherUtils::Primes {
         std::cout << "Utilized " << find_k(size) << " rounds of witnesses with a probability of error: " << (static_cast<double>(size)*std::log(2) - 2) / (static_cast<double>(size)*std::log(2) - 2 + (std::pow(2,55 + 1))) << std::endl;
         return candidate;
     }
+
+    // Generate Sophie Germain Prime
+    mpz_class generateSophieGermainPrime(size_t size) {
+        mpz_class candidate;
+        do
+        {
+            candidate = generatePrime(size);
+        } while (!isPrime(candidate * 2 + 1));
+        return candidate;
+    }
 }
 
 namespace CipherUtils::Text {

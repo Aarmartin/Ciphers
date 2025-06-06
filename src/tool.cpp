@@ -17,6 +17,7 @@ void print_usage() {
               << "\ttool totient <n>\n"
               << "\ttool fme <base> <exp> <mod>\n"
               << "\ttool prime <size>\n"
+              << "\ttool sgprime <size>\n"
               << "\ttool isprime <n>\n";
 }
 
@@ -172,9 +173,13 @@ void prime_generator(size_t size) {
     std::cout << Primes::generatePrime(size) << std::endl;
 }
 
+void sgprime_generator(size_t size) {
+    std::cout << Primes::generateSophieGermainPrime(size) << std::endl;
+}
+
 int main(int argc, char** argv) {
 
-    std::set<std::string> valid_tools = {"gcd","minverse","inverses","soc","totient","fme","isprime","prime"};
+    std::set<std::string> valid_tools = {"gcd","minverse","inverses","soc","totient","fme","isprime","prime","sgprime"};
     
     if (argc < 2) {
         print_usage();
@@ -208,6 +213,9 @@ int main(int argc, char** argv) {
     }
     else if (tool == "prime") {
         prime_generator(stoi(argv[2]));
+    }
+    else if (tool == "sgprime") {
+        sgprime_generator(stoi(argv[2]));
     }
     
     return 1;
