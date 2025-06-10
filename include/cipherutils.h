@@ -34,7 +34,7 @@ namespace CipherUtils {
         mpz_class largeModularExponentiation(mpz_class a, mpz_class e, mpz_class m);
     }
 
-    namespace numberTheory {
+    namespace NumberTheory {
         mpz_class jacobi(mpz_class m, mpz_class n);
     }
 

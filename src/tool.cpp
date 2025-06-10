@@ -131,6 +131,9 @@ void fme_finder(int a, int e, int m) {
     cout << "Result of pow(" << a << "," << e << ") (mod " << m << ") = " << fastModularExponentiation(a, e, m) << " (mod " << m << ")" << endl;
 }
 */
+void gcd_finder(int a, int b) {
+    std::cout << "GCD: " << Arithmetic::gcd(a, b) << std::endl;
+}
 
 void fme_solver(std::string a_str, std::string e_str, std::string m_str) {
     mpz_class a(a_str);
@@ -177,9 +180,16 @@ void sgprime_generator(size_t size) {
     std::cout << Primes::generateSophieGermainPrime(size) << std::endl;
 }
 
+void jacobi_solver(std::string a_str, std::string b_str) {
+    mpz_class a(a_str);
+    mpz_class b(b_str);
+
+    std::cout << "Jacobi: " << NumberTheory::jacobi(a, b) << std::endl;
+}
+
 int main(int argc, char** argv) {
 
-    std::set<std::string> valid_tools = {"gcd","minverse","inverses","soc","totient","fme","isprime","prime","sgprime"};
+    std::set<std::string> valid_tools = {"gcd","minverse","inverses","soc","totient","fme","isprime","prime","sgprime","jacobi"};
     
     if (argc < 2) {
         print_usage();
@@ -216,6 +226,12 @@ int main(int argc, char** argv) {
     }
     else if (tool == "sgprime") {
         sgprime_generator(stoi(argv[2]));
+    }
+    else if (tool == "gcd") {
+        gcd_finder(stoi(argv[2]), stoi(argv[3]));
+    }
+    else if (tool == "jacobi") {
+        jacobi_solver(argv[2], argv[3]);
     }
     
     return 1;
